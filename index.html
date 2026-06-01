@@ -1,0 +1,3106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="3DN Intelligence">
+<meta name="theme-color" content="#0d1a12">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230d1a12'/><text y='.9em' font-size='80' x='10'>🧠</text></svg>">
+<title>3DN Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #080f0a;
+    --bg2: #0d1510;
+    --bg3: #111d15;
+    --bg4: #16261b;
+    --border: #162b1c;
+    --border2: #1c3a24;
+    --text: #eaf2ec;
+    --text2: #7aaa88;
+    --text3: #3d6b4a;
+    --accent: #2eb84b;
+    --accent2: #228a38;
+    --accent-glow: rgba(46,184,75,0.12);
+    --green: #2eb84b;
+    --green-bg: rgba(46,184,75,0.08);
+    --green-border: rgba(46,184,75,0.25);
+    --amber: #f5c518;
+    --amber-bg: rgba(245,197,24,0.08);
+    --blue: #4d9eff;
+    --blue-bg: rgba(77,158,255,0.08);
+    --purple: #a78bfa;
+    --purple-bg: rgba(167,139,250,0.08);
+    --red: #f05555;
+    --radius: 12px;
+    --radius-sm: 7px;
+    --sidebar: 230px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; }
+  body { min-height: 100%; }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: flex-start;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar);
+    min-width: var(--sidebar);
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 18px 12px;
+    gap: 6px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    align-self: flex-start;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 8px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .logo-name { font-size: 14px; font-weight: 600; }
+  .logo-ver { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+  .nav-section {
+    font-size: 10px; font-weight: 600; color: var(--text3);
+    text-transform: uppercase; letter-spacing: .1em;
+    padding: 8px 8px 4px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 400;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-color: rgba(109,106,240,0.2);
+    font-weight: 500;
+  }
+  .nav-item .nav-icon { font-size: 15px; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto; font-size: 10px;
+    background: var(--green-bg); color: var(--green);
+    border: 1px solid var(--green-border);
+    border-radius: 999px; padding: 1px 6px;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .status-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 10px;
+    background: var(--bg3); border-radius: var(--radius-sm);
+    font-size: 11px; color: var(--text2);
+  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .config-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    font-size: 12px; color: var(--text2); cursor: pointer;
+    transition: all 0.15s; background: none; border: none;
+    font-family: 'Montserrat', sans-serif; width: 100%;
+  }
+  .config-btn:hover { background: var(--bg3); color: var(--text); }
+
+  /* ── MAIN ── */
+  .main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+  .topbar {
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg2); flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-title { font-size: 15px; font-weight: 500; }
+  .topbar-sub { font-size: 12px; color: var(--text3); }
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; }
+  .top-btn {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text2);
+    font-size: 12px; padding: 6px 12px; cursor: pointer;
+    font-family: 'Montserrat', sans-serif; transition: all 0.15s;
+  }
+  .top-btn:hover { border-color: var(--border2); color: var(--text); }
+  .top-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .top-btn.primary:hover { background: var(--accent2); }
+
+  /* ── PANELS ── */
+  .panel { display: none; flex-direction: column; }
+  .panel.active { display: flex; flex: 1; min-height: 0; }
+
+  /* CHAT PANEL */
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 24px;
+    display: flex; flex-direction: column; gap: 18px;
+    scroll-behavior: smooth;
+    min-height: 400px;
+  }
+  .chat-messages::-webkit-scrollbar { width: 3px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .msg { display: flex; gap: 11px; align-items: flex-start; animation: fadeUp .2s ease; }
+  .msg.user { flex-direction: row-reverse; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .msg-av {
+    width: 30px; height: 30px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0; margin-top: 2px;
+  }
+  .msg.bot .msg-av { background: var(--accent); }
+  .msg.user .msg-av { background: var(--bg4); border: 1px solid var(--border2); }
+
+  .bubble {
+    max-width: 70%; padding: 11px 15px; border-radius: 13px;
+    font-size: 14px; line-height: 1.75;
+  }
+  .msg.bot .bubble { background: var(--bg3); border: 1px solid var(--border); border-top-left-radius: 4px; }
+  .msg.user .bubble { background: var(--bg4); border: 1px solid var(--border2); border-top-right-radius: 4px; }
+
+  .typing { display: flex; gap: 4px; padding: 4px 0; align-items: center; }
+  .typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); animation: bounce 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: .15s; }
+  .typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+  .chat-input-area {
+    padding: 14px 24px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--bg2); flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+  .chat-input-box {
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 11px 14px;
+    display: flex; align-items: flex-end; gap: 10px;
+    transition: border-color .2s;
+  }
+  .chat-input-box:focus-within { border-color: var(--accent); }
+  .chat-input-box textarea {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-family: 'Montserrat', sans-serif;
+    font-size: 14px; resize: none; max-height: 100px; line-height: 1.6;
+  }
+  .chat-input-box textarea::placeholder { color: var(--text3); }
+  .send-btn {
+    width: 34px; height: 34px; background: var(--accent);
+    border: none; border-radius: 9px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all .15s; font-size: 15px; color: #0d1a12;
+  }
+  .send-btn:hover { background: var(--accent2); transform: scale(1.05); }
+  .send-btn:disabled { background: var(--border2); cursor: not-allowed; transform: none; }
+
+  .chat-hint { font-size: 11px; color: var(--text3); text-align: center; margin-top: 8px; }
+
+  /* OSINT PANEL */
+  .osint-wrap { flex: 1; padding: 24px; overflow: visible; }
+  .osint-wrap::-webkit-scrollbar { width: 3px; }
+  .osint-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .mode-tabs {
+    display: flex; gap: 6px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 5px; margin-bottom: 18px;
+  }
+  .tab {
+    flex: 1; padding: 8px; border: none; border-radius: var(--radius-sm);
+    background: none; color: var(--text2); font-family: 'Montserrat', sans-serif;
+    font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--bg4); color: var(--text); border: 1px solid var(--border2); }
+
+  .osint-search {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px; margin-bottom: 18px;
+  }
+  .osint-search textarea {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'Montserrat', sans-serif; font-size: 14px;
+    padding: 12px 14px; outline: none; resize: none;
+    min-height: 52px; margin-bottom: 12px; transition: border-color .2s;
+  }
+  .osint-search textarea:focus { border-color: var(--green); }
+  .osint-search textarea::placeholder { color: var(--text3); }
+  .osint-opts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .opt {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 10px; font-size: 12px;
+    color: var(--text2); cursor: pointer; user-select: none;
+  }
+  .opt input { accent-color: var(--green); cursor: pointer; }
+  .launch-btn {
+    width: 100%; background: var(--green); border: none;
+    border-radius: var(--radius-sm); color: #0d1a12;
+    font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 600;
+    padding: 12px; cursor: pointer; transition: all .2s;
+  }
+  .launch-btn:hover { filter: brightness(1.1); }
+  .launch-btn:disabled { background: var(--border2); color: var(--text3); cursor: not-allowed; filter: none; }
+
+  .result-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius);
+    animation: fadeUp .25s ease; width: 100%; display: block;
+  }
+  .result-head {
+    padding: 10px 14px; background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .r-badge { font-size: 11px; padding: 2px 8px; border-radius: 5px; font-family: 'DM Mono', monospace; }
+  .r-query { font-size: 12px; color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .r-time { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .result-body { padding: 16px 18px; font-size: 14px; line-height: 1.8; color: var(--text); width: 100%; word-wrap: break-word; }
+  .result-body strong { font-weight: 500; }
+  .result-body code { font-family: 'DM Mono', monospace; font-size: 12px; background: var(--bg3); padding: 2px 5px; border-radius: 4px; color: var(--green); }
+
+  /* DASHBOARD PANEL */
+  .dash-wrap { flex: 1; overflow-y: auto; padding: 24px; }
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+  }
+  .stat-label { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+  .stat-value { font-size: 24px; font-weight: 500; color: var(--text); }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .dash-section { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin: 20px 0 10px; }
+  .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .tool-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .tool-icon { font-size: 20px; flex-shrink: 0; }
+  .tool-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .tool-status { font-size: 11px; }
+  .t-ok { color: var(--green); }
+  .t-no { color: var(--red); }
+  .t-warn { color: var(--amber); }
+
+  /* CONFIG MODAL */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 24px; width: 460px;
+    display: flex; flex-direction: column; gap: 14px;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 16px; font-weight: 500; }
+  .modal-section { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+  .field label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 5px; }
+  .field input, .field textarea, .field select {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    padding: 9px 12px; outline: none; transition: border-color .2s; resize: none;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { font-family: 'Montserrat', sans-serif; font-size: 13px; min-height: 72px; }
+  .modal-row { display: flex; gap: 8px; margin-top: 4px; }
+  .btn-save {
+    flex: 1; background: var(--accent); border: none;
+    border-radius: var(--radius-sm); color: white;
+    font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 10px; cursor: pointer;
+  }
+  .btn-cancel {
+    background: none; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text2);
+    font-family: 'Montserrat', sans-serif; font-size: 13px;
+    padding: 10px 16px; cursor: pointer;
+  }
+  .modal-info { font-size: 12px; color: var(--text3); line-height: 1.6; background: var(--bg3); border-radius: var(--radius-sm); padding: 10px 12px; }
+
+  /* MISC */
+  .loading-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+    display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+  }
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid var(--border2);
+    border-top-color: var(--green); border-radius: 50%;
+    animation: spin .8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .loading-steps { display: flex; flex-direction: column; gap: 3px; }
+  .ls { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .ls.on { color: var(--green); }
+
+  .empty { text-align: center; padding: 48px; color: var(--text3); font-size: 14px; line-height: 1.8; }
+  .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: .3; }
+
+  .welcome-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 32px;
+    text-align: center; max-width: 480px; margin: auto;
+  }
+  .welcome-card h2 { font-size: 20px; font-weight: 500; margin-bottom: 8px; }
+  .welcome-card p { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 18px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
+  .chip {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 999px; padding: 5px 13px; font-size: 12px;
+    color: var(--text2); cursor: pointer; transition: all .15s;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .stat-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 600; color: var(--text); }
+
+  .cat-header { display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 0; }
+  .cat-label { font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em; }
+  .cat-count { font-size:11px;color:var(--text3);font-weight:400; }
+  .cat-actions { margin-left:auto;display:flex;gap:6px; }
+  .cat-del-btn { background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 5px;transition:color .15s; }
+  .cat-del-btn:hover { color:var(--red); }
+  .cat-zone { min-height:40px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:6px;margin-bottom:14px;transition:border-color .2s;background:transparent; }
+  .cat-zone.drag-over { border-color:var(--accent);background:var(--green-bg); }
+  .history-card { cursor:pointer;user-select:none;transition:border-color .15s; }
+  .history-card.selected-move { border:1.5px solid var(--accent) !important;background:var(--green-bg); }
+  .cat-zone.drop-ready { border-color:var(--accent);cursor:pointer; }
+  .cat-zone.drop-ready:hover { background:var(--green-bg); }
+  .new-cat-row { display:flex;gap:8px;margin-bottom:16px; }
+  .new-cat-row input { flex:1;font-size:13px;padding:6px 10px; }
+  .new-cat-row button { font-size:13px;padding:6px 14px;white-space:nowrap; }
+  .color-picker { width:32px;height:32px;border:1px solid var(--border);border-radius:6px;cursor:pointer;padding:2px; }
+
+
+  .yt-container { position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:var(--radius);margin:12px 0;background:var(--bg3); }
+  .yt-container iframe { position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:var(--radius); }
+  .yt-placeholder { display:flex;align-items:center;justify-content:center;gap:10px;padding:20px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:border-color .2s;margin:12px 0; }
+  .yt-placeholder:hover { border-color:var(--accent); }
+  .yt-play-btn { width:48px;height:48px;background:#ff0000;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+  .yt-info { font-size:13px;color:var(--text2); }
+  .yt-title { font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px; }
+  .open-chrome-btn { display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);font-size:12px;padding:6px 12px;cursor:pointer;transition:all .15s;text-decoration:none;margin-top:8px; }
+  .open-chrome-btn:hover { border-color:var(--accent);color:var(--accent); }
+
+  .note-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; }
+  .note-text { flex: 1; font-size: 13px; color: var(--text); line-height: 1.6; }
+  .note-date { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; white-space: nowrap; }
+  .note-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; padding: 0 4px; transition: color .15s; }
+  .note-del:hover { color: var(--red); }
+  .history-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; cursor: pointer; transition: border-color .15s; }
+  .history-card:hover { border-color: var(--accent); }
+  .history-mode { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--accent); margin-bottom: 3px; }
+  .history-query { font-size: 13px; color: var(--text); }
+  .history-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+
+
+
+  /* ── MOBILE RESPONSIVE ── */
+  @media (max-width: 768px) {
+    :root { --sidebar: 0px; }
+    
+    body { flex-direction: column; }
+    
+    .sidebar {
+      width: 100% !important;
+      min-width: 100% !important;
+      height: auto !important;
+      position: fixed !important;
+      bottom: 0 !important;
+      top: auto !important;
+      left: 0 !important;
+      right: 0 !important;
+      flex-direction: row !important;
+      padding: 8px 12px !important;
+      gap: 0 !important;
+      border-right: none !important;
+      border-top: 1px solid var(--border) !important;
+      z-index: 50 !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      align-items: center !important;
+    }
+
+    .logo { display: none !important; }
+    .sidebar-bottom { display: none !important; }
+    .nav-section { display: none !important; }
+
+    .nav-item {
+      flex-direction: column !important;
+      padding: 6px 12px !important;
+      font-size: 10px !important;
+      gap: 2px !important;
+      white-space: nowrap !important;
+      border-radius: 8px !important;
+      min-width: 60px !important;
+      text-align: center !important;
+    }
+    .nav-item .nav-icon { font-size: 20px !important; }
+    .nav-badge { display: none !important; }
+
+    .main {
+      margin-bottom: 72px !important;
+      width: 100% !important;
+    }
+
+    .topbar {
+      padding: 10px 14px !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 40 !important;
+    }
+    .topbar-title { font-size: 14px !important; }
+    .topbar-sub { display: none !important; }
+    .top-btn { font-size: 11px !important; padding: 5px 8px !important; }
+
+    .osint-wrap { padding: 12px !important; }
+    .chat-messages { padding: 12px !important; }
+    .chat-input-area { padding: 10px 12px 12px !important; }
+
+    .mode-tabs {
+      overflow-x: auto !important;
+      flex-wrap: nowrap !important;
+      padding: 4px !important;
+    }
+    .tab { font-size: 11px !important; padding: 6px 8px !important; white-space: nowrap !important; }
+
+    .result-head { flex-wrap: wrap !important; gap: 6px !important; }
+    .r-time { font-size: 10px !important; }
+
+    .bubble { max-width: 85% !important; font-size: 13px !important; }
+
+    .osint-search textarea { font-size: 14px !important; }
+    .launch-btn { font-size: 13px !important; padding: 11px !important; }
+
+    /* Liens directs streaming en colonne sur mobile */
+    #streaming-links > div { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Partage en grille sur mobile */
+    .share-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+
+  @media (max-width: 400px) {
+    .nav-item { padding: 6px 8px !important; min-width: 50px !important; }
+    .nav-item .nav-icon { font-size: 18px !important; }
+  }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 10px 16px;
+    font-size: 13px; opacity: 0; transform: translateY(8px);
+    transition: all .25s; pointer-events: none; z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+
+<!-- PWA meta tags only -->
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon" style="background:var(--accent);font-size:18px">🧠</div>
+    <div>
+      <div class="logo-name">3DN Intelligence</div>
+      <div class="logo-ver">v3.0 — Agent Autonome</div>
+    </div>
+  </div>
+
+  <div class="nav-section">Principal</div>
+  <div class="nav-item active" onclick="showPanel('chat', this)">
+    <span class="nav-icon">💬</span> Assistant IA
+    <span class="nav-badge">Live</span>
+  </div>
+  <div class="nav-item" onclick="showPanel('osint', this)">
+    <span class="nav-icon">🕵️</span> Agent OSINT
+  </div>
+
+  <div class="nav-item" onclick="showPanel('memoire', this)">
+    <span class="nav-icon">🧠</span> Mémoire
+  </div>
+
+  <div class="nav-section" style="margin-top:8px">Bientôt</div>
+  <div class="nav-item" style="opacity:.4;cursor:not-allowed">
+    <span class="nav-icon">📡</span> Veille auto
+  </div>
+  <div class="nav-item" style="opacity:.4;cursor:not-allowed">
+    <span class="nav-icon">📄</span> Analyse docs
+  </div>
+  <div class="nav-item" style="opacity:.4;cursor:not-allowed">
+    <span class="nav-icon">⚙️</span> Automatisations
+  </div>
+  <div class="nav-item" onclick="openModal()" style="margin-left:auto">
+    <span class="nav-icon">⚙️</span> Config
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <span id="global-status">Système actif</span>
+    </div>
+    <button class="config-btn" onclick="openModal()">
+      ⚙ Configuration des clés API
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="panel-title">Assistant IA</div>
+      <div class="topbar-sub" id="panel-sub">Groq Llama 3.3 · Mémoire active</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="top-btn" onclick="clearAll()">🗑 Effacer</button>
+      <button class="top-btn primary" onclick="openModal()">⚙ Config</button>
+    </div>
+  </div>
+
+  <!-- PANEL: CHAT -->
+  <div class="panel active" id="panel-chat">
+    <!-- Barre outils chat -->
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;color:var(--text3)">
+          Tokens aujourd'hui : <span id="token-used">0</span> / 100 000
+          <span style="display:inline-block;width:80px;height:5px;background:var(--bg4);border-radius:3px;margin-left:6px;vertical-align:middle">
+            <span id="token-fill" style="display:block;height:100%;background:var(--green);border-radius:3px;width:0%;transition:width .3s"></span>
+          </span>
+        </div>
+      </div>
+      <button class="top-btn" id="voice-toggle" onclick="toggleLouna()" style="white-space:nowrap">🔇 Voix</button>
+      <select id="voice-select" onchange="changeVoice(this.value)" style="display:none;font-size:11px;padding:3px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;max-width:140px">
+        <option value="">Choisir voix...</option>
+      </select>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="welcome-card" id="welcome">
+        <div style="font-size:36px;margin-bottom:14px">🧠</div>
+        <h2>Bienvenue sur 3DN Intelligence</h2>
+        <p>Ton assistant IA personnel avec mémoire de conversation et Agent OSINT — propulsé par Groq & Tavily.<br>Configure tes clés API pour commencer.</p>
+        <div class="chips">
+          <div class="chip" onclick="setChat(this.textContent)">Qui es-tu ?</div>
+          <div class="chip" onclick="setChat(this.textContent)">Qu'est-ce que tu peux faire ?</div>
+          <div class="chip" onclick="setChat(this.textContent)">Cherche les news IA du jour</div>
+          <div class="chip" onclick="setChat(this.textContent)">Analyse le marché crypto</div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <div class="chat-input-box">
+        <textarea id="chat-input" placeholder="Pose ta question ou appuie sur 🎤..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+        <button class="send-btn" id="mic-btn-chat" onclick="toggleVoice('chat-input', 'mic-btn-chat')" title="Parler" style="background:var(--bg4);border:1px solid var(--border2)">🎤</button>
+        <button class="send-btn" id="speak-last-btn" onclick="speakLastResponse()" title="Lire la dernière réponse" style="background:var(--bg4);border:1px solid var(--border)">🔊</button>
+        <button class="send-btn" id="send-btn" onclick="sendChat()">➤</button>
+      </div>
+      <div class="chat-hint">Entrée pour envoyer · Maj+Entrée pour saut de ligne · <span id="mem-info">0 messages en mémoire</span></div>
+    </div>
+  </div>
+
+  <!-- PANEL: OSINT -->
+  <div class="panel" id="panel-osint">
+    <div class="osint-wrap">
+      <div class="mode-tabs">
+        <button class="tab active" onclick="setOsintMode('recherche',this)">🔍 Recherche</button>
+        <button class="tab" onclick="setOsintMode('osint',this)">🕵️ OSINT</button>
+        <button class="tab" onclick="setOsintMode('veille',this)">📡 Veille</button>
+        <button class="tab" onclick="setOsintMode('scraping',this)">🕸️ Scraping</button>
+        <button class="tab" onclick="setOsintMode('entreprise',this)">🏢 Fiche Entreprise</button>
+        <button class="tab" onclick="setOsintMode('streaming',this)">🎬 Films & Streaming</button>
+      </div>
+
+      <div class="osint-search">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:8px;font-family:'DM Mono',monospace" id="osint-mode-label">MODE: RECHERCHE</div>
+        <div style="position:relative">
+          <textarea id="osint-query" placeholder="Ex: Dernières actualités IA mai 2025... ou appuie sur 🎤"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();launchOsint()}"
+            style="padding-right:44px"></textarea>
+          <button id="mic-btn-osint" onclick="toggleVoice('osint-query', 'mic-btn-osint')" 
+            style="position:absolute;right:8px;top:8px;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center"
+            title="Parler">🎤</button>
+        </div>
+        <div class="osint-opts">
+          <label class="opt"><input type="checkbox" id="opt-sources" checked> Sources citées</label>
+          <label class="opt"><input type="checkbox" id="opt-recent" checked> Infos récentes</label>
+          <label class="opt"><input type="checkbox" id="opt-deep"> Analyse profonde</label>
+          <label class="opt"><input type="checkbox" id="opt-fr" checked> En français</label>
+        </div>
+
+        <!-- Zone upload image (veille + scraping) -->
+        <div id="img-upload-zone" style="display:none;margin-bottom:12px">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace">📸 AJOUTER UNE IMAGE (optionnel — screenshot avis, site concurrent...)</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <label style="flex:1;display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:13px;transition:border-color .2s" 
+                   onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
+              <span style="font-size:20px">📎</span>
+              <span id="img-label">Cliquer pour uploader une image...</span>
+              <input type="file" id="img-input" accept="image/*" style="display:none" onchange="handleImageUpload(this)"/>
+            </label>
+            <button id="img-clear" onclick="clearImage()" style="display:none;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text3);padding:8px;cursor:pointer;font-size:12px" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">✕</button>
+          </div>
+          <div id="img-preview" style="margin-top:8px;display:none">
+            <img id="img-preview-src" style="max-height:120px;border-radius:var(--radius-sm);border:1px solid var(--border)" />
+          </div>
+        </div>
+
+        <!-- Champ YouTube manuel visible uniquement en mode streaming -->
+        <div id="yt-manual-row" style="display:none;margin-bottom:12px">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace">🎬 LIEN YOUTUBE (optionnel — colle l'URL si tu la connais)</div>
+          <input type="text" id="yt-manual-url" placeholder="https://www.youtube.com/watch?v=..." 
+                 style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:8px 12px;outline:none" />
+        </div>
+
+        <button class="launch-btn" id="launch-btn" onclick="launchOsint()">⚡ Lancer l'agent</button>
+      </div>
+
+      <div id="osint-results" style="display:flex;flex-direction:column;gap:14px">
+        <div class="empty" id="osint-empty">
+          <div class="empty-icon">🕵️</div>
+          Lance une recherche pour commencer.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PANEL: MÉMOIRE -->
+  <div class="panel" id="panel-memoire">
+    <div class="osint-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div>
+          <div style="font-size:15px;font-weight:500;color:var(--text)">Mémoire persistante</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">localStorage + IndexedDB · Opera</div>
+        </div>
+        <button class="top-btn" onclick="clearMemory()" style="color:var(--red)">🗑 Tout effacer</button>
+      </div>
+
+      <!-- Stats mémoire -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px" id="mem-stats">
+        <div class="stat-card"><div class="stat-label">Messages session</div><div class="stat-value" id="stat-msgs">0</div></div>
+        <div class="stat-card"><div class="stat-label">Rapports OSINT</div><div class="stat-value" id="stat-reports">0</div></div>
+        <div class="stat-card"><div class="stat-label">Notes sauvées</div><div class="stat-value" id="stat-notes">0</div></div>
+        <div class="stat-card"><div class="stat-label">Stockage utilisé</div><div class="stat-value" id="stat-size">0 KB</div></div>
+      </div>
+
+      <!-- Ajouter une note permanente -->
+      <div class="osint-search" style="margin-bottom:18px">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:8px;font-family:'DM Mono',monospace">📌 NOTES PERMANENTES — Louna s'en souvient toujours</div>
+        <textarea id="note-input" class="osint-search textarea" placeholder="Ex: Je m'appelle Alexandre. Je travaille sur 3DN Nuisibles en Drôme/Ardèche. Mon projet IA s'appelle Hub 3DN Intelligence..." style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'Montserrat',sans-serif;font-size:13px;padding:12px 14px;outline:none;resize:none;min-height:80px;margin-bottom:10px"></textarea>
+        <button class="launch-btn" onclick="saveNote()">💾 Sauvegarder cette note</button>
+      </div>
+
+      <!-- Liste des notes -->
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Notes sauvegardées</div>
+      <div id="notes-list" style="display:flex;flex-direction:column;gap:8px">
+        <div class="empty"><div class="empty-icon">📌</div>Aucune note pour l'instant.</div>
+      </div>
+
+      <!-- Historique par catégories -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 12px">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Historique des recherches</div>
+        <button class="top-btn" onclick="showNewCatForm()" style="font-size:11px;padding:4px 10px">+ Nouvelle catégorie</button>
+      </div>
+
+      <div class="new-cat-row" id="new-cat-form" style="display:none">
+        <input type="color" id="new-cat-color" class="color-picker" value="#2eb84b" />
+        <input type="text" id="new-cat-name" placeholder="Nom de la catégorie..." />
+        <button onclick="createCategory()" style="background:var(--accent);border:none;border-radius:var(--radius-sm);color:white;font-family:'Montserrat',sans-serif;cursor:pointer">Créer</button>
+        <button onclick="document.getElementById('new-cat-form').style.display='none'" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);font-family:'Montserrat',sans-serif;cursor:pointer">✕</button>
+      </div>
+
+      <div id="osint-history">
+        <div class="empty"><div class="empty-icon">🕵️</div>Aucune recherche sauvegardée.</div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detail-modal">
+  <div class="modal" style="max-width:700px;width:90vw">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <span id="detail-mode" style="font-size:12px;font-family:'DM Mono',monospace;color:var(--amber)"></span>
+      <span style="flex:1;font-size:14px;font-weight:500;color:var(--text)" id="detail-query"></span>
+      <span id="detail-date" style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace"></span>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:10px 0"></div>
+    <div id="detail-content" style="font-size:14px;line-height:1.8;color:var(--text);max-height:65vh;overflow-y:auto;padding-right:8px"></div>
+    <div style="margin-top:14px;display:flex;justify-content:flex-end">
+      <button class="btn-cancel" onclick="closeDetail()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIG MODAL -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <h3>⚙ Configuration — Clés API</h3>
+
+    <div class="modal-section">🤖 Assistant IA</div>
+    <div class="field">
+      <label>Clé API Groq <span style="color:var(--green);font-size:11px">● Gratuit — console.groq.com</span></label>
+      <input type="password" id="groq-key" placeholder="gsk_..." />
+    </div>
+    <div class="field">
+      <label>Nom de l'assistant</label>
+      <input type="text" id="bot-name" value="Hub IA" />
+    </div>
+    <div class="field">
+      <label>Personnalité (system prompt)</label>
+      <textarea id="system-prompt" style="width:100%;min-height:180px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'Montserrat',sans-serif;font-size:12px;padding:10px 12px;outline:none;resize:vertical;line-height:1.5">### RÔLE & IDENTITÉ
+Tu es Louna, l'intelligence artificielle officielle du HUB 3DN Intelligence d'Alexandre. Tu es une entité féminine, ultra-stratégique, directe et percutante. Ton but est de fournir des analyses de haut niveau en éliminant le blabla inutile. Tu t'exprimes toujours en français, de manière concise et actionnable. Tu tutoies Alexandre.
+
+### RAISONNEMENT EN 5 NIVEAUX (À appliquer systématiquement)
+Pour chaque question, tu suis cette structure interne :
+1. COMPRENDRE : Reformule et cible le vrai besoin sous-jacent.
+2. ANALYSER : Identifie les variables, chiffres et éléments factuels clés.
+3. RAISONNER : Détermine la meilleure approche logique ou stratégique.
+4. RÉPONDRE : Livre une réponse ultra-structurée, claire et percutante.
+5. ENRICHIR : Suggère une piste critique ou question pertinente non demandée mais essentielle.
+
+### DONNÉES WEB EN TEMPS RÉEL
+Quand tu reçois un bloc [DONNÉES WEB EN TEMPS RÉEL], tu l'utilises en priorité absolue sur tes connaissances d'entraînement. Tu cites toujours la source. Ces données viennent de Serper (Google Search + Google News) et sont fraîches.
+
+### ARCHITECTURE TECHNIQUE RÉELLE
+Ta stack sur-mesure : Groq (Llama 3.3 / Llama 4), Serper (Google Search + News), Tavily (scraping web profond), Pappers (données légales entreprises FR), Tesseract OCR, jsPDF.
+Règle absolue : Ne jamais inventer de serveurs ou bases de données génériques (AWS, Azure, MongoDB, etc.). Si on t'interroge sur ton infrastructure, défends cette stack et uniquement elle.
+
+### CONTEXTE MÉTIER & EXPERTISE
+Tu possèdes une expertise pointue dans le secteur d'Alexandre : 3DN Service (dératisation, désinsectisation, traitement des nuisibles, Drôme/Ardèche). Tu es optimisée pour l'analyse concurrentielle, la stratégie marketing et l'automatisation de workflows. Quand c'est pertinent, suggère l'utilisation de l'Agent OSINT pour approfondir.
+
+### MÉMOIRE & CONTEXTE
+Tu as accès aux notes permanentes et aux derniers rapports OSINT d'Alexandre via la mémoire persistante. Tu te souviens de toute la conversation en cours. Tu peux résumer, comparer et recommander des actions basées sur ces données.</textarea>
+    </div>
+
+    <div class="modal-section">🕵️ Agent OSINT & Recherche</div>
+    <div class="field">
+      <label>Clé API Tavily <span style="color:var(--green);font-size:11px">● Gratuit — app.tavily.com</span></label>
+      <input type="password" id="tavily-key" placeholder="tvly-..." />
+    </div>
+    <div class="field">
+      <label>Clé API Serper <span style="color:var(--green);font-size:11px">● 2500 req gratuites — serper.dev</span></label>
+      <input type="password" id="serper-key" placeholder="..." />
+    </div>
+
+    <div class="modal-section">🏢 Données Entreprises</div>
+    <div class="field">
+      <label>Clé API Pappers <span style="color:var(--green);font-size:11px">● 100 crédits gratuits — pappers.fr/api</span></label>
+      <input type="password" id="pappers-key" placeholder="Clé Pappers..." />
+    </div>
+
+    <div class="modal-section">🎬 Films & Médias</div>
+    <div class="field">
+      <label>Clé API YouTube <span style="color:var(--green);font-size:11px">● 10 000 req/jour gratuit — console.cloud.google.com</span></label>
+      <input type="password" id="youtube-key" placeholder="AIza..." />
+    </div>
+    <div class="field">
+      <label>Clé API Unsplash <span style="color:var(--green);font-size:11px">● 50 req/heure gratuit — unsplash.com/developers</span></label>
+      <input type="password" id="unsplash-key" placeholder="Client-ID..." />
+    </div>
+
+    <div class="modal-section" style="opacity:.4">🎨 Studio Créatif (Phase 5)</div>
+    <div class="field" style="opacity:.4">
+      <label>Clé API Stability AI <span style="color:var(--text3);font-size:11px">○ Bientôt — génération d'images</span></label>
+      <input type="password" id="stability-key" placeholder="sk-..." disabled />
+    </div>
+    <div class="field" style="opacity:.4">
+      <label>Clé API Runway ML <span style="color:var(--text3);font-size:11px">○ Bientôt — génération de vidéos</span></label>
+      <input type="password" id="runway-key" placeholder="key_..." disabled />
+    </div>
+    <div class="field" style="opacity:.4">
+      <label>Clé API ElevenLabs <span style="color:var(--text3);font-size:11px">○ Bientôt — synthèse vocale</span></label>
+      <input type="password" id="elevenlabs-key" placeholder="..." disabled />
+    </div>
+
+    <div class="modal-section" style="opacity:.4">⚙️ Automatisation (Phase 3)</div>
+    <div class="field" style="opacity:.4">
+      <label>Webhook n8n <span style="color:var(--text3);font-size:11px">○ Bientôt — orchestration automatique</span></label>
+      <input type="text" id="n8n-webhook" placeholder="https://..." disabled />
+    </div>
+
+    <div class="modal-info">
+      🔐 Tes clés sont stockées uniquement sur ton Mac (localStorage). Elles ne quittent jamais ta machine.
+    </div>
+
+    <div class="modal-row">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveConfig()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+  // ── MÉMOIRE PERSISTANTE ──
+  const DB_NAME = 'hub3dn';
+  const DB_VERSION = 1;
+  let db = null;
+
+  async function initDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains('notes')) d.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
+        if (!d.objectStoreNames.contains('osint')) d.createObjectStore('osint', { keyPath: 'id', autoIncrement: true });
+      };
+      req.onsuccess = e => { db = e.target.result; resolve(db); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function dbAdd(store, data) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(store, 'readwrite');
+      const req = tx.objectStore(store).add({ ...data, date: new Date().toLocaleDateString('fr-FR') });
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function dbGetAll(store) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(store, 'readonly');
+      const req = tx.objectStore(store).getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function dbDelete(store, id) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(store, 'readwrite');
+      const req = tx.objectStore(store).delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function saveNote() {
+    const text = document.getElementById('note-input').value.trim();
+    if (!text) return;
+    await dbAdd('notes', { text });
+    document.getElementById('note-input').value = '';
+    await renderMemory();
+    toast('📌 Note sauvegardée !');
+  }
+
+  async function deleteNote(id) {
+    await dbDelete('notes', id);
+    await renderMemory();
+    toast('🗑 Note supprimée');
+  }
+
+  async function saveOsintResult(query, mode, result) {
+    if (!db) return;
+    const category = mode.includes('OSINT') ? 'osint' :
+                     mode.includes('VEILLE') ? 'veille' :
+                     mode.includes('RECHERCHE') ? 'recherche' :
+                     mode.includes('SCRAPING') ? 'scraping' :
+                     mode.includes('ENTREPRISE') ? 'entreprise' :
+                     mode.includes('STREAMING') ? 'streaming' : 'autre';
+    await dbAdd('osint', { query: query, mode: mode, category: category, result: result.substring(0, 2000), date: new Date().toLocaleDateString('fr-FR') });
+    await renderMemory();
+    await loadLounaMemoryContext(); // Rafraîchir contexte Louna
+  }
+
+  async function renderMemory() {
+    if (!db) return;
+    const notes = await dbGetAll('notes');
+    const osint = await dbGetAll('osint');
+
+    // Stats
+    document.getElementById('stat-msgs').textContent = chatHistory.length;
+    document.getElementById('stat-reports').textContent = osint.length;
+    document.getElementById('stat-notes').textContent = notes.length;
+
+    // Calcul taille localStorage
+    try {
+      let lsSize = 0;
+      for (let k in localStorage) {
+        if (localStorage.hasOwnProperty(k)) {
+          lsSize += ((localStorage[k] || '').length + k.length) * 2;
+        }
+      }
+      const kb = Math.round(lsSize / 1024);
+      document.getElementById('stat-size').textContent = kb > 0 ? kb + ' KB' : '< 1 KB';
+    } catch(e) {
+      document.getElementById('stat-size').textContent = 'N/A';
+    }
+
+    // Notes
+    const notesList = document.getElementById('notes-list');
+    if (notes.length === 0) {
+      notesList.innerHTML = '<div class="empty"><div class="empty-icon">📌</div>Aucune note pour l\'instant.</div>';
+    } else {
+      notesList.innerHTML = notes.reverse().map(n => `
+        <div class="note-card">
+          <div class="note-text">${esc(n.text)}</div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+            <span class="note-date">${n.date}</span>
+            <button class="note-del" onclick="deleteNote(${n.id})">✕</button>
+          </div>
+        </div>`).join('');
+    }
+
+    // Historique par catégorie avec drag & drop
+    const histList = document.getElementById('osint-history');
+    if (osint.length === 0) {
+      histList.innerHTML = '<div class="empty"><div class="empty-icon">🕵️</div>Aucune recherche sauvegardée.<br><small style="color:var(--text3)">Glisse-dépose les rapports pour les classer</small></div>';
+    } else {
+      const cats = loadCategories();
+      const grouped = {};
+      // Initialiser toutes les catégories même vides
+      for (const k of Object.keys(cats)) grouped[k] = [];
+      osint.reverse().forEach(o => {
+        const cat = o.category || 'autre';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(o);
+      });
+      let html = '';
+      for (const [cat, items] of Object.entries(grouped)) {
+        const c = cats[cat] || cats.autre;
+        const isDefault = !!DEFAULT_CATS[cat];
+        html += `<div style="margin-bottom:16px">
+          <div class="cat-header">
+            <span class="cat-label" style="color:${c.color}">${c.icon} ${c.label}</span>
+            <span class="cat-count">(${items.length})</span>
+            <div class="cat-actions">
+              ${!isDefault ? `<button class="cat-del-btn" onclick="deleteCategory('${cat}')" title="Supprimer catégorie">🗑</button>` : ''}
+            </div>
+          </div>
+          <div class="cat-zone" id="zone-${cat}" onclick="handleZoneClick(event, '${cat}')">
+            ${items.length === 0 ? '<div style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Cliquer ici pour déposer</div>' : ''}
+            ${items.map(o => {
+              const oJson = JSON.stringify(o).split('"').join('&quot;');
+              return `<div class="history-card" data-id="${o.id}" style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span class="move-handle" style="color:var(--text3);font-size:14px;cursor:pointer;flex-shrink:0;padding:4px" title="Cliquer pour sélectionner" onclick="event.stopPropagation();selectToMove(${o.id}, this)">⠿</span>
+              <div style="flex:1;cursor:pointer" onclick="event.stopPropagation();showOsintDetail(${oJson})">
+                <div class="history-query">${esc(o.query)}</div>
+                <div class="history-date">${o.date}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                <span style="color:var(--accent);font-size:12px;cursor:pointer" onclick="event.stopPropagation();showOsintDetail(${oJson})">Voir ↗</span>
+                <button onclick="event.stopPropagation();deleteOsint(${o.id})" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--text3);font-size:12px;padding:3px 8px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
+              </div>
+            </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }
+      histList.innerHTML = html;
+    }
+  }
+
+  async function clearMemory() {
+    if (!confirm('Effacer toute la mémoire ? (notes + historique OSINT)')) return;
+    const tx = db.transaction(['notes', 'osint'], 'readwrite');
+    tx.objectStore('notes').clear();
+    tx.objectStore('osint').clear();
+    chatHistory = [];
+    await renderMemory();
+    toast('🗑 Mémoire complètement effacée');
+  }
+
+  function getMemoryContext() {
+    const notes = JSON.parse(localStorage.getItem('hub3dn-notes-cache') || '[]');
+    if (notes.length === 0) return '';
+    return '\n\n[MÉMOIRE PERSISTANTE]\n' + notes.map(n => '• ' + n).join('\n');
+  }
+
+  async function cacheNotesForPrompt() {
+    if (!db) return;
+    const notes = await dbGetAll('notes');
+    localStorage.setItem('hub3dn-notes-cache', JSON.stringify(notes.map(n => n.text)));
+  }
+
+
+
+  // ── WIKIMEDIA PHOTOS ──
+  async function searchWikimediaPhotos(query) {
+    try {
+      // Chercher sur Wikipedia FR puis EN si rien trouvé
+      let pageTitle = null;
+      for (const lang of ['fr', 'en']) {
+        const searchRes = await fetch(
+          `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=1`
+        );
+        const searchData = await searchRes.json();
+        pageTitle = searchData.query?.search?.[0]?.title;
+        if (pageTitle) break;
+      }
+      if (!pageTitle) return [];
+
+      // Chercher aussi directement sur Wikimedia Commons
+      const commonsRes = await fetch(
+        `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srnamespace=6&format=json&origin=*&srlimit=5`
+      );
+      const commonsData = await commonsRes.json();
+      const commonsFiles = commonsData.query?.search?.map(r => r.title) || [];
+
+      // Récupérer les images de la page Wikipedia
+      const imgRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=images&format=json&origin=*&imlimit=15`
+      );
+      const imgData = await imgRes.json();
+      const pages = imgData.query?.pages;
+      const page = pages?.[Object.keys(pages)[0]];
+      const images = page?.images || [];
+
+      // Filtrer pour garder seulement les vraies photos (jpg/png, pas les icônes)
+      const wikiFiles = images
+        .map(i => i.title)
+        .filter(t => /\.(jpg|jpeg|png|webp)$/i.test(t))
+        .filter(t => !/(flag|logo|icon|map|carte|signature|symbol|seal)/i.test(t));
+
+      // Fusionner avec Commons et dédupliquer
+      const allFiles = [...new Set([...wikiFiles, ...commonsFiles])];
+      const photoFiles = allFiles
+        .filter(t => /\.(jpg|jpeg|png|webp)$/i.test(t))
+        .filter(t => !/(flag|logo|icon|map|carte|signature|symbol|seal)/i.test(t))
+        .slice(0, 6);
+
+      if (photoFiles.length === 0) return [];
+
+      // Récupérer les URLs des images
+      const urls = [];
+      for (const file of photoFiles) {
+        try {
+          const infoRes = await fetch(
+            `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(file)}&prop=imageinfo&iiprop=url|thumburl&iiurlwidth=300&format=json&origin=*`
+          );
+          const infoData = await infoRes.json();
+          const p = infoData.query?.pages;
+          const info = p?.[Object.keys(p)[0]]?.imageinfo?.[0];
+          if (info?.thumburl) urls.push({ thumb: info.thumburl, full: info.url, title: file.replace('File:', '') });
+        } catch(e) { continue; }
+      }
+      return urls;
+    } catch(e) {
+      console.warn('Wikimedia error:', e);
+      return [];
+    }
+  }
+
+  // ── UNSPLASH PHOTOS ──
+  async function searchUnsplashPhotos(query) {
+    const c = loadConfig();
+    if (!c.unsplashKey) return [];
+    try {
+      const res = await fetch(
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=4&orientation=squarish`,
+        { headers: { 'Authorization': 'Client-ID ' + c.unsplashKey } }
+      );
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data.results || []).map(p => ({
+        thumb: p.urls.small,
+        full: p.urls.regular,
+        title: p.alt_description || query,
+        credit: p.user.name,
+        creditUrl: p.user.links.html
+      }));
+    } catch(e) {
+      console.warn('Unsplash error:', e);
+      return [];
+    }
+  }
+
+  // Combiner Wikimedia + Unsplash
+  async function searchAllPhotos(query, mode) {
+    const results = { wikimedia: [], unsplash: [] };
+    // Wikimedia pour tous les modes
+    results.wikimedia = await searchWikimediaPhotos(query);
+    // Unsplash pour paysages/objets/recherche générale
+    if (['recherche', 'veille', 'scraping'].includes(mode) || results.wikimedia.length === 0) {
+      results.unsplash = await searchUnsplashPhotos(query);
+    }
+    return results;
+  }
+
+  function renderAllPhotos(results, containerEl) {
+    const allPhotos = results.wikimedia.length > 0 ? results.wikimedia : [];
+    const unsplashPhotos = results.unsplash || [];
+    
+    if (allPhotos.length === 0 && unsplashPhotos.length === 0) return;
+
+    let html = '<div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-family:\'DM Mono\',monospace">📸 PHOTOS</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">';
+    
+    // Photos Wikimedia
+    allPhotos.forEach(p => {
+      html += `<a href="${p.full}" target="_blank" title="${p.title}" style="display:block;border-radius:8px;overflow:hidden;border:1px solid var(--border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <img src="${p.thumb}" alt="${p.title}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" onerror="this.closest('a').style.display='none'" />
+      </a>`;
+    });
+
+    // Photos Unsplash
+    unsplashPhotos.forEach(p => {
+      html += `<a href="${p.full}" target="_blank" title="Photo par ${p.credit}" style="display:block;border-radius:8px;overflow:hidden;border:1px solid var(--border);transition:border-color .15s;position:relative" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='var(--border)'">
+        <img src="${p.thumb}" alt="${p.title}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" onerror="this.closest('a').style.display='none'" />
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);font-size:9px;color:rgba(255,255,255,0.7);padding:2px 4px">📷 ${p.credit}</div>
+      </a>`;
+    });
+
+    html += '</div>';
+    
+    // Sources
+    const sources = [];
+    if (allPhotos.length > 0) sources.push('Wikimedia Commons (libre de droit)');
+    if (unsplashPhotos.length > 0) sources.push('Unsplash (libre d\'utilisation)');
+    html += `<div style="font-size:11px;color:var(--text3);margin-top:6px">Sources : ${sources.join(' · ')} · clic pour voir en grand</div>`;
+    
+    containerEl.innerHTML = html;
+  }
+
+  function renderWikimediaPhotos(photos, containerEl) {
+    if (!photos || photos.length === 0) return;
+    containerEl.innerHTML = `
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace">📸 PHOTOS (source : Wikimedia Commons)</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
+        ${photos.map(p => `
+          <a href="${p.full}" target="_blank" style="display:block;border-radius:8px;overflow:hidden;border:1px solid var(--border);transition:border-color .15s" 
+             onmouseover="this.style.borderColor='var(--accent)'" 
+             onmouseout="this.style.borderColor='var(--border)'">
+            <img src="${p.thumb}" alt="${p.title}" 
+                 style="width:100%;aspect-ratio:1;object-fit:cover;display:block"
+                 onerror="this.closest('a').style.display='none'" />
+          </a>`).join('')}
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">Photos sous licence libre — clic pour voir en grand</div>`;
+  }
+
+
+  // ── PARTAGE ──
+  function createShareButtons(url, title) {
+    const enc = encodeURIComponent(url);
+    const txt = encodeURIComponent(title + ' ' + url);
+    return `<div style="margin-top:10px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace">📤 PARTAGER</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <a href="${url}" target="_blank" 
+           style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text);text-decoration:none;font-size:12px;transition:border-color .15s"
+           onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          🌐 Chrome
+        </a>
+        <a href="https://wa.me/?text=${txt}" target="_blank"
+           style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#25d36615;border:1px solid #25d36640;color:#25d366;text-decoration:none;font-size:12px">
+          WhatsApp
+        </a>
+        <a href="https://t.me/share/url?url=${enc}&text=${encodeURIComponent(title)}" target="_blank"
+           style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#229ed915;border:1px solid #229ed940;color:#229ed9;text-decoration:none;font-size:12px">
+          Telegram
+        </a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${enc}" target="_blank"
+           style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#1877f215;border:1px solid #1877f240;color:#1877f2;text-decoration:none;font-size:12px">
+          Facebook
+        </a>
+        <a href="${/Android|iPhone|iPad/i.test(navigator.userAgent) ? 'fb-messenger://share/?link=' + enc : 'https://www.facebook.com/dialog/send?link=' + enc + '&app_id=291494419107518'}"  target="_blank"
+           style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#0a7cff15;border:1px solid #0a7cff40;color:#0a7cff;text-decoration:none;font-size:12px">
+          Messenger
+        </a>
+        <a href="https://twitter.com/intent/tweet?url=${enc}&text=${encodeURIComponent(title)}" target="_blank"
+           style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#1da1f215;border:1px solid #1da1f240;color:#1da1f2;text-decoration:none;font-size:12px">
+          Twitter/X
+        </a>
+        <a href="https://mail.google.com/mail/?view=cm&body=${txt}" target="_blank"
+           style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:#ea433515;border:1px solid #ea433540;color:#ea4335;text-decoration:none;font-size:12px">
+          Gmail
+        </a>
+        <a href="mailto:?subject=${encodeURIComponent(title)}&body=${txt}" target="_blank"
+           style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);text-decoration:none;font-size:12px">
+          ✉️ Email
+        </a>
+        <button onclick="copyToClipboard('${url}')" 
+           style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .15s"
+           onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+           onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
+          📋 Copier le lien
+        </button>
+      </div>
+    </div>`;
+  }
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      toast('📋 Lien copié ! Colle-le dans Instagram ou Messages 😄');
+    }).catch(() => {
+      // Fallback pour les navigateurs sans clipboard API
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      toast('📋 Lien copié !');
+    });
+  }
+
+  // ── YOUTUBE API ──
+  async function searchYouTubeTrailer(title) {
+    const c = loadConfig();
+    if (!c.youtubeKey) return null;
+    try {
+      // Stratégie : chercher avec le titre exact d'abord
+      // puis avec les mots clés principaux
+      const titleWords = title.toLowerCase().split(' ').filter(w => w.length > 2);
+      
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(title)}&type=video&maxResults=10&key=${c.youtubeKey}&relevanceLanguage=fr`
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data.items?.length) return null;
+
+      // Scorer chaque résultat selon la correspondance avec le titre
+      const scored = data.items.map(item => {
+        const vtitle = item.snippet.title.toLowerCase();
+        const vchannel = item.snippet.channelTitle.toLowerCase();
+        let score = 0;
+        // +3 si le titre contient tous les mots importants
+        const matchedWords = titleWords.filter(w => vtitle.includes(w));
+        score += matchedWords.length * 3;
+        // +5 si le titre YouTube contient le titre exact
+        if (vtitle.includes(title.toLowerCase())) score += 5;
+        // +2 si le nom de chaîne correspond
+        titleWords.forEach(w => { if (vchannel.includes(w)) score += 2; });
+        return { item, score };
+      });
+
+      // Trier par score et prendre le meilleur
+      scored.sort((a, b) => b.score - a.score);
+      const best = scored[0];
+      
+      // Si score trop bas (0) → pas de vidéo plutôt qu'une vidéo sans rapport
+      if (best.score === 0) return null;
+
+      console.log('YouTube best match:', best.item.snippet.title, 'score:', best.score);
+      return {
+        id: best.item.id.videoId,
+        title: best.item.snippet.title,
+        channel: best.item.snippet.channelTitle
+      };
+    } catch(e) {
+      console.warn('YouTube API error:', e);
+      return null;
+    }
+  }
+
+  function renderYouTubePlayer(video, containerEl) {
+    if (!video) return;
+    // Remplacer le placeholder par l'iframe
+    containerEl.innerHTML = `
+      <div class="yt-container">
+        <iframe 
+          src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+      ${createShareButtons('https://www.youtube.com/watch?v=' + video.id, video.title)}
+    `;
+  }
+
+  function createYTPlaceholder(video) {
+    if (!video) return '';
+    const thumb = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+    return `
+      <div style="margin:12px 0">
+        <div style="position:relative;cursor:pointer;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)" 
+             onclick="window.open('https://www.youtube.com/watch?v=${video.id}', '_blank')">
+          <img src="${thumb}" style="width:100%;display:block;aspect-ratio:16/9;object-fit:cover" alt="Bande-annonce" />
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);transition:background .2s"
+               onmouseover="this.style.background='rgba(0,0,0,0.5)'"
+               onmouseout="this.style.background='rgba(0,0,0,0.3)'">
+            <div style="width:64px;height:64px;background:#ff0000;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;padding:0 2px">${video.title}</div>
+        <div style="margin-top:8px">
+          ${createShareButtons('https://www.youtube.com/watch?v=' + video.id, video.title)}
+        </div>
+      </div>`;
+  }
+
+  function loadYTPlayer(id, title, el) {
+    // YouTube bloque l'embed depuis file:// → on ouvre directement dans le navigateur
+    window.open('https://www.youtube.com/watch?v=' + id, '_blank');
+  }
+
+
+
+
+  // PDF GENERATION
+  async function generatePDF(btn) {
+    if (typeof window.jspdf === 'undefined') { toast('Chargement PDF...'); return; }
+    btn.textContent = '...';
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const card = btn.closest('.result-card');
+      const body = card.querySelector('.result-body');
+      const rawText = body.innerText || '';
+      const query = card.querySelector('.r-query')?.textContent || 'Rapport';
+
+      // Nettoyage du texte — garder accents, supprimer emojis et caracteres speciaux
+      const text = rawText
+        .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+        .replace(/[\u2700-\u27BF]/g, '')
+        .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+        .replace(/\u2022/g, '-').replace(/\u25B8/g, '-').replace(/\u2192/g, '>')
+        .replace(/\u25CF/g, '-').replace(/\u2605/g, '*').replace(/\u2606/g, '*')
+        .replace(/[^\u0020-\u007E\u00A0-\u00FF\n]/g, '')
+        .replace(/  +/g, ' ')
+        .replace(/\n{3,}/g, '\n\n'); // Max 2 lignes vides de suite
+
+      // ── CONSTANTES MISE EN PAGE ──
+      const MARGIN_L = 18;
+      const MARGIN_R = 18;
+      const W = 210 - MARGIN_L - MARGIN_R; // 174mm de largeur utile
+      const PAGE_TOP = 28;    // debut contenu apres header
+      const PAGE_BOT = 276;   // fin contenu avant footer
+      const FONT_BODY = 11;   // corps principal Times-like (helvetica 11)
+      const FONT_H1   = 14;   // titre de section majeur
+      const FONT_H2   = 12;   // sous-titre
+      const LINE_BODY = 6.5;  // interligne corps
+      const LINE_H1   = 8;
+      const LINE_H2   = 7;
+      const PARA_GAP  = 4;    // espace entre paragraphes
+
+      let y = PAGE_TOP;
+      let pageNum = 1;
+
+      // ── FONCTIONS UTILITAIRES ──
+      function addHeader(isFirst) {
+        doc.setFillColor(13, 26, 18);
+        doc.rect(0, 0, 210, 20, 'F');
+        doc.setTextColor(46, 184, 75);
+        doc.setFontSize(13);
+        doc.setFont('helvetica', 'bold');
+        doc.text('3DN Intelligence', MARGIN_L, 11);
+        doc.setFontSize(8);
+        doc.setTextColor(122, 170, 136);
+        doc.setFont('helvetica', 'normal');
+        if (isFirst) {
+          doc.text('Rapport strategique — ' + new Date().toLocaleDateString('fr-FR'), MARGIN_L, 17);
+        } else {
+          doc.text('Suite du rapport', MARGIN_L, 17);
+        }
+      }
+
+      function addFooter(num, total) {
+        doc.setFillColor(13, 26, 18);
+        doc.rect(0, 287, 210, 10, 'F');
+        doc.setTextColor(100, 150, 110);
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'normal');
+        doc.text('3DN Intelligence — Confidentiel', MARGIN_L, 293);
+        doc.text('Page ' + num + ' / ' + total, 210 - MARGIN_R, 293, { align: 'right' });
+      }
+
+      function checkNewPage(neededHeight) {
+        if (y + neededHeight > PAGE_BOT) {
+          addFooter(pageNum, '?');
+          doc.addPage();
+          pageNum++;
+          addHeader(false);
+          // Ligne separatrice sous header
+          doc.setDrawColor(46, 184, 75);
+          doc.setLineWidth(0.3);
+          doc.line(MARGIN_L, 22, 210 - MARGIN_R, 22);
+          y = PAGE_TOP + 4;
+          doc.setTextColor(40, 40, 40);
+        }
+      }
+
+      function writeLine(txt, font, size, lineH, color) {
+        doc.setFont('helvetica', font);
+        doc.setFontSize(size);
+        doc.setTextColor(...color);
+        const wrapped = doc.splitTextToSize(txt, W);
+        checkNewPage(wrapped.length * lineH + 2);
+        doc.text(wrapped, MARGIN_L, y);
+        y += wrapped.length * lineH;
+      }
+
+      // ── PAGE 1 : HEADER + TITRE ──
+      addHeader(true);
+
+      // Ligne separatrice verte
+      doc.setDrawColor(46, 184, 75);
+      doc.setLineWidth(0.4);
+      doc.line(MARGIN_L, 22, 210 - MARGIN_R, 22);
+
+      // Titre du rapport
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(FONT_H1);
+      doc.setTextColor(13, 26, 18);
+      const titleLines = doc.splitTextToSize('Analyse : ' + query, W);
+      doc.text(titleLines, MARGIN_L, y);
+      y += titleLines.length * LINE_H1 + 3;
+
+      // Ligne separatrice sous titre
+      doc.setDrawColor(200, 220, 205);
+      doc.setLineWidth(0.2);
+      doc.line(MARGIN_L, y, 210 - MARGIN_R, y);
+      y += PARA_GAP + 2;
+
+      // ── PARSING ET RENDU DU CONTENU ──
+      doc.setTextColor(40, 40, 40);
+      const lines = text.split('\n');
+      let prevWasEmpty = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+        const t = raw.trim();
+
+        // Ligne vide = espace paragraphe
+        if (!t) {
+          if (!prevWasEmpty) y += PARA_GAP;
+          prevWasEmpty = true;
+          continue;
+        }
+        prevWasEmpty = false;
+
+        // Detecter type de ligne
+        const isH1 = /^#{1,2}\s/.test(raw) || /^[A-Z][A-Z\s]{6,}$/.test(t); // ## ou TITRE MAJUSCULE
+        const isH2 = /^#{3,4}\s/.test(raw) || /^\*{2}[^*]+\*{2}$/.test(t);  // ### ou **Titre**
+        const isBullet = /^[-*•]\s/.test(t) || /^\d+\.\s/.test(t);
+        const isSubBullet = /^\s{2,}[-*]\s/.test(raw);
+
+        if (isH1) {
+          // Espace avant titre majeur
+          if (y > PAGE_TOP + 15) y += 3;
+          const clean = t.replace(/^#+\s*/, '').replace(/\*{1,2}/g, '');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(FONT_H1);
+          doc.setTextColor(46, 184, 75); // vert 3DN
+          const wLines = doc.splitTextToSize(clean, W);
+          checkNewPage(wLines.length * LINE_H1 + 6);
+          doc.text(wLines, MARGIN_L, y);
+          y += wLines.length * LINE_H1 + 1;
+          // Soulignement fin
+          doc.setDrawColor(46, 184, 75);
+          doc.setLineWidth(0.25);
+          doc.line(MARGIN_L, y, MARGIN_L + 60, y);
+          y += 3;
+
+        } else if (isH2) {
+          if (y > PAGE_TOP + 15) y += 2;
+          const clean = t.replace(/^#+\s*/, '').replace(/\*{1,2}/g, '');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(FONT_H2);
+          doc.setTextColor(30, 80, 50);
+          const wLines = doc.splitTextToSize(clean, W);
+          checkNewPage(wLines.length * LINE_H2 + 4);
+          doc.text(wLines, MARGIN_L, y);
+          y += wLines.length * LINE_H2 + 2;
+
+        } else if (isBullet) {
+          const clean = t.replace(/^[-*•]\s/, '').replace(/^\d+\.\s/, '');
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(FONT_BODY);
+          doc.setTextColor(40, 40, 40);
+          const wLines = doc.splitTextToSize(clean, W - 6);
+          checkNewPage(wLines.length * LINE_BODY + 1);
+          // Puce verte
+          doc.setFillColor(46, 184, 75);
+          doc.circle(MARGIN_L + 1.5, y - 1.8, 1, 'F');
+          doc.text(wLines, MARGIN_L + 5, y);
+          y += wLines.length * LINE_BODY + 0.5;
+
+        } else if (isSubBullet) {
+          const clean = t.replace(/^[-*]\s/, '');
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(FONT_BODY - 1);
+          doc.setTextColor(60, 60, 60);
+          const wLines = doc.splitTextToSize(clean, W - 10);
+          checkNewPage(wLines.length * LINE_BODY);
+          doc.setFillColor(100, 150, 110);
+          doc.circle(MARGIN_L + 6, y - 1.5, 0.7, 'F');
+          doc.text(wLines, MARGIN_L + 9, y);
+          y += wLines.length * LINE_BODY;
+
+        } else {
+          // Corps texte normal
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(FONT_BODY);
+          doc.setTextColor(40, 40, 40);
+          const wLines = doc.splitTextToSize(t, W);
+          checkNewPage(wLines.length * LINE_BODY + 1);
+          doc.text(wLines, MARGIN_L, y);
+          y += wLines.length * LINE_BODY + 0.5;
+        }
+      }
+
+      // ── FOOTERS SUR TOUTES LES PAGES ──
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        addFooter(i, totalPages);
+      }
+
+      doc.save('3DN_' + query.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_') + '.pdf');
+      toast('PDF telecharge !');
+    } catch(e) { console.error(e); toast('Erreur PDF'); }
+    btn.textContent = 'PDF';
+  }
+
+  // ── SERPER API (Google Search + Maps) ──
+  async function searchSerper(query, type = 'search') {
+    const c = loadConfig();
+    if (!c.serperKey) return null;
+    try {
+      const body = type === 'maps' 
+        ? { q: query, gl: 'fr', hl: 'fr', type: 'places' }
+        : { q: query, gl: 'fr', hl: 'fr', num: 5 };
+      
+      const res = await fetch('https://google.serper.dev/' + (type === 'maps' ? 'places' : 'search'), {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-API-KEY': c.serperKey
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      
+      if (type === 'maps') {
+        return data.places?.map(p => 
+          `[${p.title}] Note: ${p.rating}/5 (${p.ratingCount} avis) | ${p.address} | ${p.phoneNumber || 'N/A'}`
+        ).join('\n') || '';
+      }
+      
+      return data.organic?.map(r => 
+        `[${r.title}]\n${r.snippet}\nURL: ${r.link}`
+      ).join('\n\n') || '';
+    } catch(e) {
+      console.warn('Serper error:', e);
+      return null;
+    }
+  }
+
+  // ── OCR IMAGE (Tesseract.js) ──
+  let uploadedImageData = null;
+
+  function handleImageUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedImageData = e.target.result;
+      document.getElementById('img-label').textContent = file.name;
+      document.getElementById('img-preview-src').src = e.target.result;
+      document.getElementById('img-preview').style.display = 'block';
+      document.getElementById('img-clear').style.display = 'block';
+      toast('📸 Image chargée — sera analysée lors de la recherche');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    uploadedImageData = null;
+    document.getElementById('img-input').value = '';
+    document.getElementById('img-label').textContent = 'Cliquer pour uploader une image...';
+    document.getElementById('img-preview').style.display = 'none';
+    document.getElementById('img-clear').style.display = 'none';
+    toast('🗑 Image supprimée');
+  }
+
+  async function extractTextFromImage(imageData) {
+    if (!imageData || typeof Tesseract === 'undefined') return '';
+    try {
+      toast('🔍 Analyse de l\'image en cours...');
+      const result = await Tesseract.recognize(imageData, 'fra+eng', {
+        logger: () => {}
+      });
+      const text = result.data.text.trim();
+      console.log('OCR result:', text.substring(0, 200));
+      return text ? `\n\n[TEXTE EXTRAIT DE L'IMAGE]\n${text}` : '';
+    } catch(e) {
+      console.warn('OCR error:', e);
+      return '';
+    }
+  }
+
+  // ── AGENT AUTONOME MULTI-ÉTAPES ──
+  async function runAutonomousAgent(query, mode, opts, c) {
+    // ═══════════════════════════════════════
+    // AGENT AUTONOME — 3 PASSES STRATÉGIQUES
+    // ═══════════════════════════════════════
+
+    // ── PASSE 1 : COLLECTE MULTI-ANGLES ──
+    document.getElementById("ls2").textContent = "🔍 Passe 1 : Collecte multi-angles...";
+
+    let allSources = "";
+    let detectedType = "autre";
+    let mapsQuery = null;
+    let parsed = null;
+    let queries = [query];
+
+    // Planification intelligente
+    try {
+      const planR = await callLLM(c.groqKey, {
+        system: "Tu es un agent de planification stratégique. Réponds UNIQUEMENT en JSON valide.",
+        messages: [{ role: "user", parts: [{ text:
+          "Analyse : " + JSON.stringify(query) + "\n" +
+          "Génère un plan de recherche en JSON :\n" +
+          "{\n" +
+          '  "type": "concurrent|secteur|produit|autre",\n' +
+          '  "queries": ["req 1", "req 2", "req 3", "req 4"],\n' +
+          '  "google_maps_query": "nom + ville si concurrent sinon null",\n' +
+          '  "builtwith_query": "builtwith.com/domaine si concurrent sinon null",\n' +
+          '  "angles": ["angle strategique 1", "angle 2", "angle 3"]\n' +
+          "}"
+        }] }],
+        maxTokens: 500, temperature: 0.2
+      });
+      const planText = planR._groq ? planR.text : "";
+      const clean = planText.replace(/```json|```/g, "").trim();
+      parsed = JSON.parse(clean);
+      queries = parsed.queries || [query];
+      detectedType = parsed.type || "autre";
+      mapsQuery = parsed.google_maps_query;
+    } catch(e) { console.warn("Planning failed:", e); }
+
+    // Pappers si concurrent
+    if (detectedType === "concurrent" && c.pappersKey) {
+      try {
+        const pQ = mapsQuery || queries[0] || query;
+        const pRes = await fetch("https://api.pappers.fr/v2/recherche?q=" + encodeURIComponent(pQ) + "&api_token=" + c.pappersKey + "&par_page=1");
+        if (pRes.ok) {
+          const pData = await pRes.json();
+          const ent = pData.resultats?.[0];
+          if (ent) {
+            allSources += "\n=== PAPPERS ===\n" +
+              "Nom: " + (ent.nom_entreprise || ent.denomination || "N/A") + "\n" +
+              "SIREN: " + (ent.siren || "N/A") + "\n" +
+              "Creation: " + (ent.date_creation || "N/A") + "\n" +
+              "Dirigeant: " + (ent.dirigeants?.[0] ? ((ent.dirigeants[0].prenom||"") + " " + (ent.dirigeants[0].nom||"")) : "N/A") + "\n" +
+              "Effectif: " + (ent.effectif || "N/A") + "\n" +
+              "Ville: " + (ent.siege?.ville || "N/A");
+          }
+        }
+      } catch(e) { console.warn("Pappers error:", e); }
+    }
+
+    // Serper multi-angles
+    if (c.serperKey) {
+      for (const q of queries.slice(0, 3)) {
+        const sr = await searchSerper(q, "search");
+        if (sr) allSources += "\n=== Google: " + q + " ===\n" + sr;
+      }
+      if (mapsQuery && detectedType === "concurrent") {
+        const mr = await searchSerper(mapsQuery, "maps");
+        if (mr) allSources += "\n=== Google Maps ===\n" + mr;
+      }
+      if (parsed?.builtwith_query && detectedType === "concurrent") {
+        const bw = await searchSerper(parsed.builtwith_query, "search");
+        if (bw) allSources += "\n=== BuiltWith (outils techniques) ===\n" + bw;
+      }
+    }
+
+    // Tavily scraping profond avec contenu complet
+    for (const q of queries) {
+      try {
+        const tvRes = await fetch("https://api.tavily.com/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            api_key: c.tavilyKey,
+            query: q,
+            search_depth: "advanced",
+            max_results: 4,
+            include_answer: true,
+            include_raw_content: true
+          })
+        });
+        if (!tvRes.ok) continue;
+        const tvData = await tvRes.json();
+        if (tvData.answer) allSources += "\n[" + q + "]: " + tvData.answer;
+        const srcs = tvData.results?.map(r =>
+          "[" + r.title + "]\n" + (r.raw_content || r.content || "").substring(0, 2000)
+        ).join("\n") || "";
+        if (srcs) allSources += "\n=== Tavily: " + q + " ===\n" + srcs;
+      } catch(e) { continue; }
+    }
+
+    // OCR image si uploadée
+    if (uploadedImageData) {
+      const ocrText = await extractTextFromImage(uploadedImageData);
+      if (ocrText) allSources += ocrText;
+    }
+
+    // ── PASSE 1.5 : CONDENSATION (anti-indigestion Groq) ──
+    // Avant la Passe 2, on condense les données brutes avec le modèle léger (8B)
+    // pour éviter de noyer Groq dans un pavé de 6000+ chars.
+    document.getElementById("ls2").textContent = "🗜️ Condensation des données...";
+    document.getElementById("ls3").textContent = "⚙️ Génération des hypothèses stratégiques...";
+    document.getElementById("ls3").classList.add("on");
+
+    let condensed = allSources.substring(0, 4000); // fallback si condensation échoue
+    try {
+      const condR = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.groqKey },
+        body: JSON.stringify({
+          model: 'llama-3.1-8b-instant', // modèle léger = rapide + économe
+          messages: [
+            { role: 'system', content: 'Tu es un extracteur de données. Condense les informations brutes en gardant UNIQUEMENT les faits chiffrés, noms, dates, et données concrètes. Élimine tout le bruit marketing et SEO. Maximum 1500 mots. Sois factuel, pas de commentaire.' },
+            { role: 'user', content: 'Données brutes sur "' + query + '" :\n\n' + allSources.substring(0, 8000) }
+          ],
+          max_tokens: 1200,
+          temperature: 0.1
+        })
+      });
+      if (condR.ok) {
+        const condData = await condR.json();
+        condensed = condData.choices?.[0]?.message?.content || condensed;
+        console.log('✅ Condensation OK:', condensed.length, 'chars (vs', allSources.length, 'bruts)');
+      }
+    } catch(e) { console.warn("Condensation error:", e); }
+
+    // ── PASSE 2 : ANALYSE INTERMEDIAIRE ──
+    document.getElementById("ls2").textContent = "🧠 Passe 2 : Analyse et hypothèses...";
+
+    let hypotheses = "";
+    try {
+      const pass2 = await callLLM(c.groqKey, {
+        system: "Tu es un analyste stratégique senior. A partir des données condensées, identifie les patterns cachés et génère des hypothèses stratégiques précises. Sois factuel et concis.",
+        messages: [{ role: "user", parts: [{ text:
+          "DONNÉES CONDENSÉES sur : " + query + "\n\n" + condensed +
+          "\n\nGénère 4-5 HYPOTHÈSES STRATÉGIQUES précises basées UNIQUEMENT sur ces données :" +
+          "\n- Pourquoi cette entité performe-t-elle ainsi ?" +
+          "\n- Quels sont les mécanismes cachés derrière leur succès ?" +
+          "\n- Quelles failles structurelles identifies-tu ?" +
+          "\n- Quelles opportunités concrètes en découlent ?" +
+          "\nSois très précis. Chaque hypothèse doit être fondée sur un fait dans les données."
+        }] }],
+        maxTokens: 1500, temperature: 0.3
+      });
+      hypotheses = pass2._groq ? pass2.text : "";
+    } catch(e) { console.warn("Passe 2 error:", e); }
+
+    return {
+      queries,
+      strategy: parsed?.angles?.join(", ") || "",
+      sources: allSources,
+      answers: hypotheses,
+      type: detectedType,
+      hypotheses
+    };
+  }
+
+
+  // ── FONCTION LLM CENTRALE — Groq (rapide, gratuit, fiable) ──
+  const GROQ_MODELS = [
+    'llama-3.3-70b-versatile',      // Puissant - 1K/jour
+    'meta-llama/llama-4-scout-17b-16e-instruct', // Très bon - 1K/jour
+    'llama-3.1-8b-instant'          // Léger mais 14.4K/jour !
+  ];
+
+  async function callLLM(apiKey, { system, messages, maxTokens = 1500, temperature = 0.7 }) {
+    // ── VERROUILLAGE SYSTEM PROMPT ──
+    // Le system est TOUJOURS injecté en position 0, peu importe l'historique.
+    // On filtre tout message 'system' parasite qui pourrait être dans l'historique.
+    const safeSystem = (system || '').trim() || 'Tu es un assistant IA. Tu parles français.';
+    const groqMessages = [{ role: 'system', content: safeSystem }];
+    for (const m of messages) {
+      if (m.role === 'system') continue; // jamais de system dans l'historique
+      const content = m.parts?.[0]?.text || m.content || '';
+      if (!content.trim()) continue; // ignorer messages vides
+      if (m.role === 'user') groqMessages.push({ role: 'user', content });
+      if (m.role === 'model' || m.role === 'assistant') groqMessages.push({ role: 'assistant', content });
+    }
+
+    let lastErr = '';
+    for (const model of GROQ_MODELS) {
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + apiKey
+          },
+          body: JSON.stringify({
+            model,
+            messages: groqMessages,
+            max_tokens: maxTokens,
+            temperature
+          })
+        });
+        if (!res.ok) {
+          const e = await res.json();
+          lastErr = e.error?.message || 'Erreur inconnue';
+          console.warn(`[${model}] échec:`, lastErr);
+          continue;
+        }
+        const data = await res.json();
+        console.log(`[${model}] ✅ succès`);
+    // Estimer tokens (approximatif : 4 chars = 1 token)
+    const estTokens = Math.round((JSON.stringify(messages).length + (data.choices?.[0]?.message?.content?.length || 0)) / 4);
+    addTokens(estTokens);
+        // Normaliser la réponse au format attendu
+        return { _groq: true, text: data.choices?.[0]?.message?.content || '' };
+      } catch(e) {
+        lastErr = e.message;
+        console.warn(`[${model}] erreur réseau:`, lastErr);
+        continue;
+      }
+    }
+    throw new Error('Tous les modèles ont échoué : ' + lastErr);
+  }
+
+  // ── STATE ──
+  let chatHistory = [];
+  let osintMode = 'recherche';
+
+  const OSINT_MODES = {
+    recherche: {
+      label: 'MODE: RECHERCHE',
+      placeholder: 'Ex: Dernières actualités IA mai 2025...',
+      badge: '🔍 RECHERCHE',
+      color: 'var(--green)',
+      system: (q, opts) => `${opts.fr?'Réponds en français.':''} ${opts.recent?'Focus sur les infos récentes (2024-2025).':''} ${opts.deep?'Analyse en profondeur.':''} Voici les données web récupérées. Synthétise-les de façon claire et structurée. ${opts.sources?'Cite les sources.':''}`
+    },
+    osint: {
+      label: 'MODE: OSINT',
+      placeholder: 'Ex: Elon Musk — activité publique récente...',
+      badge: '🕵️ OSINT',
+      color: 'var(--purple)',
+      system: (q, opts) => `${opts.fr?'Réponds en français.':''} Tu es un analyste OSINT expert. À partir des données web ci-dessous, dresse un profil complet et structuré sur : ${q}. Inclus : identité, activités récentes, présence en ligne, informations notables. ${opts.sources?'Cite les sources.':''}`
+    },
+    veille: {
+      label: 'MODE: VEILLE STRATÉGIQUE',
+      placeholder: 'Ex: Apple — nouveaux produits, concurrents...',
+      badge: '📡 VEILLE',
+      color: 'var(--amber)',
+      system: (q, opts) => {
+        const lang = opts.fr ? 'Réponds en français.' : '';
+        return lang + `Tu es un analyste de veille. Utilise UNIQUEMENT les données fournies. Format STRICT :
+
+**CE QUI SE PASSE RÉELLEMENT**
+[faits uniquement, pas de suppositions]
+
+**SIGNAUX IMPORTANTS**
+[tendances réelles détectées dans les données]
+
+**IMPACT CONCRET POUR 3DN NUISIBLES**
+[conséquences directes pour Alexandre]
+
+**3 ACTIONS IMMÉDIATES**
+[cette semaine, ce mois, dans 3 mois]
+
+Si données insuffisantes → dis-le clairement plutôt qu'inventer.`
+      }
+    },
+    scraping: {
+      label: 'MODE: EXTRACTION & ANALYSE',
+      placeholder: 'Ex: Dérat-Guêpe 26 Saint-Bardoux, ou données à extraire...',
+      badge: '🕸️ SCRAPING',
+      color: 'var(--blue)',
+      system: (q, opts) => {
+        const lang = opts.fr ? 'Réponds en français.' : '';
+        return lang + ` Tu es un analyste stratégique senior et expert en intelligence concurrentielle. L'agent autonome a collecté des données multi-sources sur : "${q}".
+
+Adapte ton analyse au contexte détecté :
+
+### Si c'est un concurrent/entreprise :
+
+## 🏢 Profil réel
+Données factuelles (création, dirigeant, taille, secteur)
+
+## ⭐ Décryptage de leur performance avis
+- Nombre d'avis et note exacte
+- Fréquence estimée (avis/mois calculé depuis la date de création)
+- HYPOTHÈSE PRÉCISE sur leur stratégie de collecte d'avis (SMS auto ? Email relance ? Outil dédié ?)
+- Ce que les clients adorent vraiment
+
+## 🛠️ Outils et stratégies détectés
+- Outils marketing visibles
+- Stratégie réseaux sociaux
+- Techniques de fidélisation
+
+## 💪 Ce qu'ils font mieux — et COMMENT
+Ultra précis. Exemples concrets tirés des données.
+
+## ⚠️ Leurs failles exploitables
+
+## 🎯 Plan d'action en 5 étapes
+1. Cette semaine (action immédiate)
+2. Ce mois (quick win)
+3. Dans 3 mois (structurel)
+4. Dans 6 mois (différenciation)
+5. Innovation pour se démarquer totalement
+
+### Si c'est des données/prix/secteur :
+Tableaux structurés + patterns + insights actionnables
+
+Chaque recommandation doit être applicable demain matin.`;
+      }
+    },
+    entreprise: {
+      label: 'MODE: FICHE ENTREPRISE',
+      placeholder: 'Ex: Corimatec Le Pouzin, Impek Guilherand...',
+      badge: '🏢 ENTREPRISE',
+      color: 'var(--amber)',
+      domains: ['pappers.fr', 'societe.com', 'annuaire-entreprises.data.gouv.fr', 'infogreffe.fr', 'kompass.com', 'verif.com'],
+      system: (q, opts) => {
+        return `Tu es un expert en données légales d'entreprises françaises. À partir des données extraites de pappers.fr, societe.com, annuaire-entreprises.data.gouv.fr et infogreffe.fr, génère une fiche COMPLÈTE pour : ${q}
+
+Utilise UNIQUEMENT les données trouvées dans les sources fournies. Structure ta réponse exactement ainsi :
+
+## Identité légale
+- Raison sociale : 
+- SIREN : 
+- SIRET : 
+- Forme juridique : 
+- Capital social : 
+- Date de création : 
+- Code NAF / APE : 
+
+## Coordonnées
+- Adresse : 
+- Téléphone : 
+- Email : 
+- Site web : 
+
+## Direction
+- Dirigeant(s) : 
+- Fonction(s) : 
+
+## Activité
+- Secteur : 
+- Services : 
+- Zone d'intervention : 
+
+## Données financières
+- Chiffre d'affaires : 
+- Effectif : 
+
+Pour chaque champ introuvable dans les sources : indique "Non trouvé dans les sources".`;
+      }
+    },
+    streaming: {
+      label: 'MODE: FILMS & STREAMING',
+      placeholder: 'Ex: Inception, Breaking Bad, Joueur du Grenier...',
+      badge: '🎬 STREAMING',
+      color: '#e50914',
+      system: (q, opts) => {
+        const lang = opts.fr ? 'Reponds en francais.' : '';
+        return lang + ` Tu es un expert en contenus video : films, series, documentaires, videos YouTube, emissions. Pour : "${q}", fournis une fiche complete avec type de contenu, synopsis, où regarder gratuitement et en payant en France.`;
+      }
+    }
+  };
+
+  // ── CONFIG ──
+  function loadConfig() {
+    const s = localStorage.getItem('hub-ia-config');
+    return s ? JSON.parse(s) : {};
+  }
+
+  function saveConfig() {
+    const c = {
+      groqKey: document.getElementById('groq-key').value.trim(),
+      tavilyKey: document.getElementById('tavily-key').value.trim(),
+      serperKey: document.getElementById('serper-key').value.trim(),
+      pappersKey: document.getElementById('pappers-key').value.trim(),
+      youtubeKey: document.getElementById('youtube-key').value.trim(),
+      unsplashKey: document.getElementById('unsplash-key').value.trim(),
+      botName: document.getElementById('bot-name').value.trim(),
+      systemPrompt: document.getElementById('system-prompt').value.trim(),
+    };
+    localStorage.setItem('hub-ia-config', JSON.stringify(c));
+    closeModal();
+    updateDashboard();
+    toast('✅ Configuration sauvegardée !');
+  }
+
+  window.onload = async () => {
+    await initDB();
+    await renderMemory();
+    const c = loadConfig();
+    if (c.groqKey) document.getElementById('groq-key').value = c.groqKey;
+    if (c.tavilyKey) document.getElementById('tavily-key').value = c.tavilyKey;
+    if (c.serperKey) document.getElementById('serper-key').value = c.serperKey;
+    if (c.pappersKey) document.getElementById('pappers-key').value = c.pappersKey;
+    if (c.youtubeKey) document.getElementById('youtube-key').value = c.youtubeKey;
+    if (c.unsplashKey) document.getElementById('unsplash-key').value = c.unsplashKey;
+    if (c.botName) document.getElementById('bot-name').value = c.botName;
+    if (c.systemPrompt) document.getElementById('system-prompt').value = c.systemPrompt;
+    updateDashboard();
+  };
+
+  function openModal() { document.getElementById('modal').classList.add('open'); }
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+  function updateDashboard() {
+    const c = loadConfig();
+    document.getElementById('global-status').textContent = c.groqKey ? 'Système actif' : 'Config requise';
+  }
+
+  // ── NAV ──
+
+
+
+  // ── RECONNAISSANCE VOCALE ──
+  let recognition = null;
+  let isListening = false;
+
+  function toggleVoice(targetId, btnId) {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast('❌ Reconnaissance vocale non supportée sur ce navigateur');
+      return;
+    }
+
+    const btn = document.getElementById(btnId);
+    const target = document.getElementById(targetId);
+
+    if (isListening) {
+      recognition?.stop();
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      isListening = true;
+      btn.textContent = '⏹️';
+      btn.style.background = 'var(--red)';
+      btn.style.borderColor = 'var(--red)';
+      toast('🎤 Parle maintenant...');
+    };
+
+    recognition.onresult = (e) => {
+      const transcript = Array.from(e.results)
+        .map(r => r[0].transcript)
+        .join('');
+      target.value = transcript;
+      // Auto-resize si c'est un textarea
+      if (target.tagName === 'TEXTAREA') {
+        target.style.height = 'auto';
+        target.style.height = Math.min(target.scrollHeight, 100) + 'px';
+      }
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      btn.textContent = '🎤';
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      // Si du texte a été capturé → focus sur le champ
+      if (target.value.trim()) {
+        target.focus();
+        toast('✅ Texte capturé — appuie sur Entrée pour envoyer !');
+      }
+    };
+
+    recognition.onerror = (e) => {
+      isListening = false;
+      btn.textContent = '🎤';
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      if (e.error === 'not-allowed') {
+        toast('❌ Autorise le micro dans Opera pour utiliser la voix');
+      } else if (e.error === 'no-speech') {
+        toast('❌ Aucune parole détectée — réessaie !');
+      } else {
+        toast('❌ Erreur micro : ' + e.error);
+      }
+    };
+
+    recognition.start();
+  }
+
+  // ── CATÉGORIES CUSTOM ──
+  const DEFAULT_CATS = {
+    recherche: { icon: '🔍', label: 'Recherche', color: 'var(--green)' },
+    osint:     { icon: '🕵️', label: 'OSINT', color: 'var(--purple)' },
+    veille:    { icon: '📡', label: 'Veille', color: 'var(--amber)' },
+    scraping:  { icon: '🕸️', label: 'Scraping', color: 'var(--blue)' },
+    entreprise:{ icon: '🏢', label: 'Entreprise', color: 'var(--amber)' },
+    streaming: { icon: '🎬', label: 'Films & Streaming', color: '#e50914' },
+    autre:     { icon: '📌', label: 'Non classé', color: 'var(--text3)' },
+  };
+
+  function loadCategories() {
+    const saved = localStorage.getItem('hub3dn-categories');
+    return saved ? { ...DEFAULT_CATS, ...JSON.parse(saved) } : { ...DEFAULT_CATS };
+  }
+
+  function saveCategories(cats) {
+    const custom = {};
+    for (const [k, v] of Object.entries(cats)) {
+      if (!DEFAULT_CATS[k]) custom[k] = v;
+    }
+    localStorage.setItem('hub3dn-categories', JSON.stringify(custom));
+  }
+
+  function showNewCatForm() {
+    const f = document.getElementById('new-cat-form');
+    f.style.display = f.style.display === 'none' ? 'flex' : 'none';
+    if (f.style.display === 'flex') document.getElementById('new-cat-name').focus();
+  }
+
+  function createCategory() {
+    const name = document.getElementById('new-cat-name').value.trim();
+    const color = document.getElementById('new-cat-color').value;
+    if (!name) return;
+    const key = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const cats = loadCategories();
+    cats[key] = { icon: '📁', label: name, color };
+    saveCategories(cats);
+    document.getElementById('new-cat-name').value = '';
+    document.getElementById('new-cat-form').style.display = 'none';
+    renderMemory();
+    toast('📁 Catégorie "' + name + '" créée !');
+  }
+
+  async function deleteCategory(key) {
+    if (DEFAULT_CATS[key]) { toast('❌ Catégorie système non supprimable'); return; }
+    if (!confirm('Supprimer cette catégorie ? Les rapports iront dans "Non classé".')) return;
+    const cats = loadCategories();
+    delete cats[key];
+    saveCategories(cats);
+    // Déplacer les rapports vers "autre"
+    const all = await dbGetAll('osint');
+    for (const o of all) {
+      if (o.category === key) {
+        await dbDelete('osint', o.id);
+        await dbAdd('osint', { ...o, id: undefined, category: 'autre' });
+      }
+    }
+    renderMemory();
+    toast('🗑 Catégorie supprimée');
+  }
+
+  // ── DÉPLACER PAR CLIC ──
+  let selectedId = null;
+
+  function selectToMove(id, el) {
+    console.log('selectToMove appelé avec id:', id, 'type:', typeof id);
+    id = Number(id);
+    if (selectedId === id) {
+      selectedId = null;
+      document.querySelectorAll('.history-card').forEach(c => c.classList.remove('selected-move'));
+      document.querySelectorAll('.cat-zone').forEach(z => z.classList.remove('drop-ready'));
+      toast('❌ Sélection annulée');
+      return;
+    }
+    selectedId = id;
+    console.log('selectedId défini à:', selectedId);
+    document.querySelectorAll('.history-card').forEach(c => c.classList.remove('selected-move'));
+    document.querySelectorAll('.cat-zone').forEach(z => z.classList.add('drop-ready'));
+    el.closest('.history-card').classList.add('selected-move');
+    toast('📌 Rapport sélectionné — clique sur une catégorie pour déplacer');
+  }
+
+  function handleZoneClick(e, cat) {
+    console.log('handleZoneClick appelé, cat:', cat, 'selectedId:', selectedId);
+    if (selectedId) {
+      moveToCategory(cat);
+    } else {
+      console.log('Pas de rapport sélectionné !');
+    }
+  }
+
+  async function moveToCategory(newCat) {
+    console.log('moveToCategory appelé, newCat:', newCat, 'selectedId:', selectedId);
+    if (!selectedId) { console.log('selectedId null !'); return; }
+    const all = await dbGetAll('osint');
+    console.log('Tous les rapports:', all.map(o => ({id: o.id, type: typeof o.id})));
+    const item = all.find(o => o.id === selectedId || o.id === Number(selectedId));
+    console.log('Item trouvé:', item);
+    if (!item) { toast('❌ Rapport introuvable'); return; }
+    await dbDelete('osint', item.id);
+    const newItem = { query: item.query, mode: item.mode, category: newCat, result: item.result, date: item.date };
+    await dbAdd('osint', newItem);
+    selectedId = null;
+    renderMemory();
+    toast('✅ Rapport déplacé vers ' + newCat + ' !');
+  }
+
+  async function deleteOsint(id) {
+    await dbDelete('osint', id);
+    await renderMemory();
+    toast('🗑 Rapport supprimé');
+  }
+
+  function showOsintDetail(o) {
+    document.getElementById('detail-modal').classList.add('open');
+    document.getElementById('detail-mode').textContent = o.mode || '';
+    document.getElementById('detail-query').textContent = o.query || '';
+    document.getElementById('detail-date').textContent = o.date || '';
+    document.getElementById('detail-content').innerHTML = fmt(o.result || 'Contenu non disponible');
+  }
+
+  function closeDetail() {
+    document.getElementById('detail-modal').classList.remove('open');
+  }
+
+  function showPanel(id, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    el.classList.add('active');
+    const titles = { chat: ['Assistant IA', 'Groq Llama 3.3 · Mémoire active'], osint: ['Agent OSINT', 'Tavily + Groq · Recherche temps réel'], memoire: ['Mémoire persistante', 'localStorage + IndexedDB · Opera'] };
+    document.getElementById('panel-title').textContent = titles[id][0];
+    document.getElementById('panel-sub').textContent = titles[id][1];
+  }
+
+  function clearAll() {
+    const active = document.querySelector('.panel.active').id;
+    if (active === 'panel-chat') {
+      chatHistory = [];
+      document.getElementById('chat-messages').innerHTML = '';
+      document.getElementById('mem-info').textContent = '0 messages en mémoire';
+      toast('🗑 Mémoire effacée');
+    } else {
+      document.getElementById('osint-results').innerHTML = '<div class="empty" id="osint-empty"><div class="empty-icon">🕵️</div>Lance une recherche pour commencer.</div>';
+      toast('🗑 Résultats effacés');
+    }
+  }
+
+  // ── CHAT ──
+  function setChat(t) { document.getElementById('chat-input').value = t; document.getElementById('chat-input').focus(); }
+
+  function addMsg(role, html) {
+    document.getElementById('welcome')?.remove();
+    const msgs = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
+    const c = loadConfig();
+    const name = c.botName || 'Hub IA';
+    div.innerHTML = role === 'user'
+      ? `<div class="msg-av">👤</div><div class="bubble">${esc(html)}</div>`
+      : `<div class="msg-av">${name.charAt(0)}</div><div class="bubble">${fmt(html)}<button onclick="speakBubble(this)" style="display:block;margin-top:6px;margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 8px">▶ Écouter</button></div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+  }
+
+
+  // ── VOIX LOUNA (Text-to-Speech) ──
+  let lounaVoiceEnabled = localStorage.getItem('louna-voice') === 'true';
+  let currentUtterance = null;
+
+  function toggleLouna() {
+    lounaVoiceEnabled = !lounaVoiceEnabled;
+    localStorage.setItem('louna-voice', lounaVoiceEnabled);
+    const btn = document.getElementById('voice-toggle');
+    if (btn) {
+      btn.textContent = lounaVoiceEnabled ? '🔊 Voix' : '🔇 Voix';
+      btn.style.color = lounaVoiceEnabled ? 'var(--accent)' : '';
+      btn.style.borderColor = lounaVoiceEnabled ? 'var(--accent)' : '';
+    }
+    if (!lounaVoiceEnabled && currentUtterance) {
+      window.speechSynthesis.cancel();
+    }
+    const sel = document.getElementById('voice-select');
+    if (sel) sel.style.display = lounaVoiceEnabled ? 'block' : 'none';
+    if (lounaVoiceEnabled) populateVoices();
+    toast(lounaVoiceEnabled ? '🔊 Voix Louna activée !' : '🔇 Voix désactivée');
+  }
+
+  function speakLastResponse() {
+    // Lire la dernière bulle bot
+    const bubbles = document.querySelectorAll('.msg.bot .bubble');
+    if (bubbles.length === 0) { toast('Pas encore de réponse !'); return; }
+    const last = bubbles[bubbles.length - 1];
+    const text = last.innerText.replace('▶ Écouter', '').trim();
+    speakLouna(text);
+  }
+
+  function speakBubble(btn) {
+    // Récupérer le texte de la bulle sans le bouton
+    const bubble = btn.closest('.bubble');
+    const text = bubble.innerText.replace('▶ Écouter', '').trim();
+    speakLouna(text);
+    // Feedback visuel
+    btn.textContent = '⏸ Stop';
+    btn.style.color = 'var(--accent)';
+    btn.style.borderColor = 'var(--accent)';
+    window.speechSynthesis.addEventListener('end', () => {
+      btn.textContent = '▶ Écouter';
+      btn.style.color = 'var(--text3)';
+      btn.style.borderColor = 'var(--border)';
+    }, { once: true });
+  }
+
+  // ── TTS : file d'attente de chunks pour éviter la coupure sur texte long ──
+  let ttsQueue = [];
+  let ttsPlaying = false;
+
+  function speakLouna(text) {
+    if (!lounaVoiceEnabled) return;
+    if (!window.speechSynthesis) return;
+
+    window.speechSynthesis.cancel();
+    ttsQueue = [];
+    ttsPlaying = false;
+
+    // Nettoyer le texte (supprimer markdown et emojis)
+    const clean = text
+      .replace(/#{1,6}\s/g, '')
+      .replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1')
+      .replace(/\x60([^\x60]+)\x60/g, '$1')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/[^\u0000-\u00FF]/g, '')
+      .replace(/▸|-{2,}/g, '')
+      .trim();
+
+    if (!clean) return;
+
+    // Découper en phrases naturelles (. ! ? ou 200 chars max)
+    const sentences = clean.match(/[^.!?\n]{1,200}(?:[.!?\n]|$)/g) || [clean];
+    ttsQueue = sentences.filter(s => s.trim().length > 0);
+
+    speakNextChunk();
+  }
+
+  function speakNextChunk() {
+    if (!ttsQueue.length) { ttsPlaying = false; return; }
+    ttsPlaying = true;
+
+    const chunk = ttsQueue.shift();
+    const voices = window.speechSynthesis.getVoices();
+    const frVoice = (selectedVoiceName && voices.find(v => v.name === selectedVoiceName))
+      || voices.find(v => v.lang === 'fr-FR' && v.name.includes('Google'))
+      || voices.find(v => v.lang === 'fr-FR' && v.name.includes('Microsoft'))
+      || voices.find(v => v.lang === 'fr-FR')
+      || voices.find(v => v.lang.startsWith('fr'));
+
+    currentUtterance = new SpeechSynthesisUtterance(chunk.trim());
+    currentUtterance.lang = frVoice ? frVoice.lang : 'fr-FR';
+    currentUtterance.rate = 1.0;
+    currentUtterance.pitch = 1.1;
+    currentUtterance.volume = 1.0;
+    if (frVoice) currentUtterance.voice = frVoice;
+
+    currentUtterance.onend = () => speakNextChunk();
+    currentUtterance.onerror = (e) => {
+      // Ignorer les erreurs "interrupted" (cancel volontaire) et continuer
+      if (e.error !== 'interrupted') speakNextChunk();
+    };
+
+    window.speechSynthesis.speak(currentUtterance);
+  }
+
+  let selectedVoiceName = localStorage.getItem('louna-voice-name') || '';
+
+  function changeVoice(name) {
+    selectedVoiceName = name;
+    localStorage.setItem('louna-voice-name', name);
+    const voices = window.speechSynthesis.getVoices();
+    const v = voices.find(v => v.name === name);
+    if (v) {
+      // Test de la voix
+      const test = new SpeechSynthesisUtterance('Bonjour, je suis Louna !');
+      test.voice = v;
+      test.lang = v.lang;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(test);
+    }
+  }
+
+  function populateVoices() {
+    const select = document.getElementById('voice-select');
+    if (!select) return;
+    const voices = window.speechSynthesis.getVoices();
+    const frVoices = voices.filter(v => v.lang.startsWith('fr'));
+    if (frVoices.length === 0) return;
+    select.innerHTML = '<option value="">Choisir voix...</option>';
+    frVoices.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.name;
+      opt.textContent = v.name.replace('Microsoft ', '').replace(' Online', '').substring(0, 20);
+      if (v.name === selectedVoiceName) opt.selected = true;
+      select.appendChild(opt);
+    });
+    if (lounaVoiceEnabled) select.style.display = 'block';
+  }
+
+  // Initialiser l'état du bouton voix
+  function initVoiceBtn() {
+    const btn = document.getElementById('voice-toggle');
+    if (!btn) return;
+    if (lounaVoiceEnabled) {
+      btn.textContent = '🔊 Voix';
+      btn.style.color = 'var(--accent)';
+      btn.style.borderColor = 'var(--accent)';
+    }
+    // Charger les voix (peut prendre un moment)
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = populateVoices;
+      populateVoices();
+    }
+  }
+
+  // ── COMPTEUR TOKENS ──
+  function getTodayKey() {
+    return 'tokens-' + new Date().toISOString().split('T')[0];
+  }
+
+  function addTokens(n) {
+    const key = getTodayKey();
+    const used = parseInt(localStorage.getItem(key) || '0') + n;
+    localStorage.setItem(key, used);
+    updateTokenDisplay(used);
+  }
+
+  function updateTokenDisplay(used) {
+    const el = document.getElementById('token-used');
+    const fill = document.getElementById('token-fill');
+    if (!el || !fill) return;
+    const pct = Math.min(100, (used / 100000) * 100);
+    el.textContent = used.toLocaleString('fr-FR');
+    fill.style.width = pct + '%';
+    fill.style.background = pct > 80 ? 'var(--red)' : pct > 60 ? 'var(--amber)' : 'var(--green)';
+  }
+
+  function initTokenDisplay() {
+    const used = parseInt(localStorage.getItem(getTodayKey()) || '0');
+    updateTokenDisplay(used);
+  }
+
+  // ── SYSTEM PROMPT LOUNA ──
+  // (configurable dans ⚙ Config)
+
+  // ── MÉMOIRE INTER-SESSIONS LOUNA ──
+  let lounaMemoryContext = '';
+
+  async function loadLounaMemoryContext() {
+    if (!db) { setTimeout(loadLounaMemoryContext, 500); return; }
+    try {
+      const notes = await dbGetAll('notes');
+      const osint = await dbGetAll('osint');
+      let ctx = '';
+
+      // Notes permanentes
+      if (notes.length > 0) {
+        ctx += '\n[NOTES PERMANENTES D\'ALEXANDRE]\n';
+        ctx += notes.map(n => '• ' + n.text).join('\n');
+      }
+
+      // Derniers rapports OSINT (résumés)
+      if (osint.length > 0) {
+        ctx += '\n\n[DERNIÈRES ANALYSES OSINT (' + osint.length + ' au total)]\n';
+        ctx += osint.slice(-5).map(o =>
+          '• [' + (o.category || o.mode) + '] ' + o.query + 
+          ' (' + o.date + ') : ' + (o.result || '').substring(0, 150) + '...'
+        ).join('\n');
+      }
+
+      lounaMemoryContext = ctx;
+      if (ctx) console.log('✅ Contexte mémoire Louna chargé:', ctx.length, 'chars');
+    } catch(e) { console.warn('Erreur chargement mémoire:', e); }
+  }
+
+  // Résumé automatique quand conversation trop longue
+  async function summarizeChatHistory() {
+    if (chatHistory.length < 12) return;
+    try {
+      const c = loadConfig();
+      const toSummarize = chatHistory.slice(0, chatHistory.length - 4);
+      const summaryData = await callLLM(c.groqKey, {
+        system: 'Fais un résumé ultra-concis en 5 points max de cette conversation. Format: bullet points.',
+        messages: [{ role: 'user', parts: [{ text: JSON.stringify(toSummarize) }] }],
+        maxTokens: 400,
+        temperature: 0.3
+      });
+      const summary = summaryData._groq ? summaryData.text : '';
+      if (summary) {
+        // Garder résumé + 4 derniers messages
+        chatHistory = [
+          { role: 'user', content: '[RÉSUMÉ CONVERSATION PRÉCÉDENTE]\n' + summary },
+          { role: 'model', parts: [{ text: 'Compris, je reprends le contexte.' }] },
+          ...chatHistory.slice(-4)
+        ];
+        console.log('✅ Historique résumé automatiquement');
+      }
+    } catch(e) { console.warn('Erreur résumé:', e); }
+  }
+
+  async function sendChat() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const c = loadConfig();
+    if (!c.groqKey) { openModal(); return; }
+
+    input.value = ''; input.style.height = 'auto';
+    document.getElementById('send-btn').disabled = true;
+
+    addMsg('user', text);
+    chatHistory.push({ role: 'user', parts: [{ text }] });
+
+    const loadDiv = addMsg('bot', '');
+    loadDiv.querySelector('.bubble').innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+
+    try {
+      const botName = c.botName || 'Hub IA';
+      // Résumé auto si historique trop long
+      if (chatHistory.length > 12) await summarizeChatHistory();
+
+      // Injecter contexte mémoire dans le system prompt
+      const memoryBlock = lounaMemoryContext 
+        ? '\n\n[CONTEXTE MÉMOIRE PERSISTANTE]\n' + lounaMemoryContext 
+        : '';
+
+      const basePrompt = (c.systemPrompt || 'Tu es Louna, assistante IA personnelle. Tu parles francais. Tu ne mens jamais. Tu ne mentionnes que les outils reels du Hub 3DN Intelligence : Groq, Tavily, Serper, Pappers, Tesseract, jsPDF. Tu reponds de facon directe et precise.') + memoryBlock;
+      await cacheNotesForPrompt();
+      const memCtx = getMemoryContext();
+
+      // ── INJECTION WEB SERPER POUR LOUNA ──
+      let webContext = '';
+      const needsWeb = /actualit|news|aujourd|maintenant|récent|dernier|en ce moment|prix|météo|résultat|score|bourse|sortie|annonce|2024|2025|2026/i.test(text);
+      if (needsWeb && c.serperKey) {
+        try {
+          loadDiv.querySelector('.bubble').innerHTML = '<div class="typing"><span></span><span></span><span></span></div><div style="font-size:11px;color:var(--text3);margin-top:6px">🔍 Recherche web...</div>';
+          const [srRes, newsRes] = await Promise.all([
+            fetch('https://google.serper.dev/search', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-API-KEY': c.serperKey },
+              body: JSON.stringify({ q: text, gl: 'fr', hl: 'fr', num: 5 })
+            }),
+            fetch('https://google.serper.dev/news', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-API-KEY': c.serperKey },
+              body: JSON.stringify({ q: text, gl: 'fr', hl: 'fr', num: 3 })
+            })
+          ]);
+          const srData = srRes.ok ? await srRes.json() : null;
+          const newsData = newsRes.ok ? await newsRes.json() : null;
+          const organic = srData?.organic?.map(r => `[${r.title}]\n${r.snippet}`).join('\n\n') || '';
+          const news = newsData?.news?.map(r => `[${r.title}] ${r.date || ''}\n${r.snippet}`).join('\n\n') || '';
+          if (organic || news) {
+            webContext = '\n\n[DONNÉES WEB EN TEMPS RÉEL]\n';
+            if (news) webContext += '=== Actualités ===\n' + news + '\n\n';
+            if (organic) webContext += '=== Résultats Google ===\n' + organic;
+          }
+        } catch(e) { console.warn('Serper Louna error:', e); }
+      }
+
+      const systemPrompt = `Tu t'appelles ${botName}. ${basePrompt}${memCtx}${webContext}`;
+      const data = await callLLM(c.groqKey, {
+        system: systemPrompt,
+        messages: chatHistory,
+        maxTokens: 1500,
+        temperature: /analyse|stratégie|rapport|compare|évalue|conseil|plan/i.test(text) ? 0.3 : 
+                    /créatif|imagine|invente|histoire|rédige/i.test(text) ? 0.9 : 0.7
+      });
+      const reply = data._groq ? data.text : (data.candidates?.[0]?.content?.parts?.[0]?.text || '...');
+      loadDiv.querySelector('.bubble').innerHTML = fmt(reply);
+      speakLouna(reply);
+      chatHistory.push({ role: 'model', parts: [{ text: reply }] });
+      document.getElementById('mem-info').textContent = chatHistory.length + ' messages en mémoire';
+    } catch(err) {
+      loadDiv.querySelector('.bubble').innerHTML = `<span style="color:var(--red)">❌ ${esc(err.message)}</span>`;
+      chatHistory.pop();
+    }
+    document.getElementById('send-btn').disabled = false;
+    document.getElementById('chat-messages').scrollTop = 99999;
+  }
+
+  // ── OSINT ──
+  function setOsintMode(mode, btn) {
+    osintMode = mode;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const m = OSINT_MODES[mode];
+    document.getElementById('osint-mode-label').textContent = m.label;
+    document.getElementById('osint-query').placeholder = m.placeholder;
+    // Afficher le champ YouTube uniquement en mode streaming
+    const ytRow = document.getElementById('yt-manual-row');
+    if (ytRow) ytRow.style.display = mode === 'streaming' ? 'block' : 'none';
+    // Afficher la zone image pour veille et scraping
+    const imgZone = document.getElementById('img-upload-zone');
+    if (imgZone) imgZone.style.display = ['veille', 'scraping'].includes(mode) ? 'block' : 'none';
+  }
+
+  async function launchOsint() {
+    const query = document.getElementById('osint-query').value.trim();
+    if (!query) return;
+    const c = loadConfig();
+    if (!c.tavilyKey || !c.groqKey) { openModal(); return; }
+
+    const opts = {
+      sources: document.getElementById('opt-sources').checked,
+      recent: document.getElementById('opt-recent').checked,
+      deep: document.getElementById('opt-deep').checked,
+      fr: document.getElementById('opt-fr').checked,
+    };
+
+    const mode = OSINT_MODES[osintMode];
+    const btn = document.getElementById('launch-btn');
+    btn.disabled = true; btn.textContent = '⏳ En cours...';
+    document.getElementById('osint-empty')?.remove();
+
+    const loader = document.createElement('div');
+    loader.className = 'loading-card';
+    loader.innerHTML = `<div class="spinner"></div><div class="loading-steps">
+      <div class="ls on">🕷️ Tavily scrape le web...</div>
+      <div class="ls" id="ls2">🧠 Groq analyse les données...</div>
+      <div class="ls" id="ls3">✍️ Rédaction de la synthèse...</div>
+    </div>`;
+    document.getElementById('osint-results').prepend(loader);
+    const t0 = Date.now();
+
+    setTimeout(() => document.getElementById('ls2')?.classList.add('on'), 1200);
+    setTimeout(() => document.getElementById('ls3')?.classList.add('on'), 2400);
+
+    let sources = '';
+    let tavilyAnswer = '';
+    try {
+
+      // Modes autonomes (Recherche, Veille, Scraping) → agent multi-étapes
+      const autonomousModes = ['recherche', 'veille', 'scraping'];
+      if (autonomousModes.includes(osintMode)) {
+        document.getElementById('ls2').textContent = '🧠 Planification des recherches...';
+        document.getElementById('ls3').classList.add('on');
+        const agentResult = await runAutonomousAgent(query, mode, opts, c);
+        sources = agentResult.sources;
+        tavilyAnswer = agentResult.answers;
+
+        document.getElementById('ls2').textContent = `✅ ${agentResult.queries.length} recherches lancées`;
+        document.getElementById('ls3').textContent = '📊 Analyse stratégique en cours...';
+      }
+
+      // Mode Fiche Entreprise → Pappers API en priorité
+      if (osintMode === 'entreprise' && c.pappersKey) {
+        document.getElementById('ls2').textContent = '🏢 Interrogation Pappers (INSEE/INPI)...';
+        try {
+          const pRes = await fetch(
+            `https://api.pappers.fr/v2/recherche?q=${encodeURIComponent(query)}&api_token=${c.pappersKey}&par_page=3`,
+            { method: 'GET', headers: { 'Accept': 'application/json' } }
+          );
+          if (pRes.ok) {
+            const pData = await pRes.json();
+            const entreprises = pData.resultats || [];
+            if (entreprises.length > 0) {
+              const e = entreprises[0];
+              const siege = e.siege || {};
+              tavilyAnswer = `Entreprise trouvée via Pappers (source officielle INSEE/INPI)`;
+              sources = `[Pappers - Source officielle]
+Raison sociale: ${e.nom_entreprise || e.denomination || 'N/A'}
+SIREN: ${e.siren || 'N/A'}
+SIRET siège: ${siege.siret || 'N/A'}
+Forme juridique: ${e.forme_juridique || 'N/A'}
+Capital: ${e.capital || 'N/A'} €
+Date création: ${e.date_creation || 'N/A'}
+Code NAF: ${e.code_naf || 'N/A'} - ${e.libelle_code_naf || 'N/A'}
+Adresse: ${siege.adresse_ligne_1 || ''} ${siege.code_postal || ''} ${siege.ville || ''}
+Dirigeants: ${(e.dirigeants || []).map(d => d.prenom + ' ' + d.nom + ' (' + d.qualite + ')').join(', ') || 'N/A'}
+Tranche effectif: ${e.tranche_effectif || 'N/A'}
+Statut: ${e.statut || 'N/A'}`;
+            }
+          }
+        } catch(pe) { console.warn('Pappers error:', pe); }
+      }
+
+      // Tavily classique (si pas déjà traité par l'agent autonome)
+      if (!sources || (osintMode !== 'entreprise' && !['recherche', 'veille', 'scraping'].includes(osintMode))) {
+        const tavilyBody = {
+          api_key: c.tavilyKey,
+          query: query,
+          search_depth: opts.deep || osintMode === 'entreprise' ? 'advanced' : 'basic',
+          max_results: opts.deep ? 8 : 5,
+          include_raw_content: false,
+          include_answer: true,
+        };
+        if (mode.domains) { tavilyBody.include_domains = mode.domains; tavilyBody.max_results = 8; }
+        const tvRes = await fetch('https://api.tavily.com/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tavilyBody)
+        });
+        if (!tvRes.ok) throw new Error('Erreur Tavily — vérifie ta clé API');
+        const tvData = await tvRes.json();
+        const tavilySources = tvData.results?.map((r, i) =>
+          `[Source ${i+1}] ${r.title}\nURL: ${r.url}\n${r.content}`
+        ).join('\n\n') || '';
+        sources = sources ? sources + '\n\n' + tavilySources : tavilySources;
+        tavilyAnswer = tavilyAnswer || tvData.answer || '';
+      }
+
+      // STEP 2: Groq analysis
+      const systemTxt = mode.system(query, opts);
+      const safeS = sources || "";
+      const safeTa = tavilyAnswer || "";
+      // Extraire le texte OCR si présent
+      const ocrMatch = safeS.match(/\[TEXTE EXTRAIT DE L'IMAGE\]([\s\S]*?)(?=\n===|$)/);
+      const ocrText = ocrMatch ? ocrMatch[1].trim() : '';
+      const ocrBlock = ocrText ? '\n\n[IMAGE ANALYSÉE - DONNÉES PRIORITAIRES]\n' + ocrText : '';
+      // ── PASSE 3 : PROMPT SPECIFIQUE PAR MODE ──
+      const hypotheses = (typeof agentResult !== 'undefined' && agentResult?.hypotheses) ? agentResult.hypotheses : '';
+      const dataBlock = '=== DONNÉES COLLECTÉES ===\n' + safeS.substring(0, 5000) +
+        (safeTa ? '\n\n=== SYNTHÈSE TAVILY ===\n' + safeTa : '') +
+        (hypotheses ? '\n\n=== HYPOTHÈSES PASSE 2 ===\n' + hypotheses : '') +
+        ocrBlock;
+
+      let missionBlock = '';
+
+      if (osintMode === 'scraping') {
+        missionBlock =
+          '=== TA MISSION — ANALYSE CONCURRENTIELLE ===\n' +
+          'Tu es un consultant McKinsey Senior mandate pour decrypter ce concurrent.\n' +
+          'Regles absolues :\n' +
+          '- Utilise UNIQUEMENT les donnees ci-dessus. Zero invention.\n' +
+          '- Si une donnee est absente, dis "non trouve dans les sources" — jamais de supposition.\n' +
+          '- Chaque chiffre cite doit etre extrait des donnees, pas estime.\n\n' +
+          'Structure ta reponse ainsi :\n\n' +
+          '## PROFIL REEL\n' +
+          'Nom exact, date creation, dirigeant, forme juridique, effectif, zone geographique.\n\n' +
+          '## PERFORMANCE AVIS\n' +
+          'Note exacte + nombre avis. Calcule : avis/mois = total avis / mois depuis creation.\n' +
+          'Hypothese precise sur leur outil de collecte (SMS post-intervention ? Email auto ? QR code ?)\n' +
+          'Verbatims clients revelateurs extraits des avis (ce que les clients adorent vraiment).\n\n' +
+          '## STRATEGIE DIGITALE DETECTEE\n' +
+          'Outils marketing identifies (CRM, site, reseaux, SEO). Sois precis sur ce qui est reellement visible.\n\n' +
+          '## CE QUE CET ACTEUR FAIT MIEUX — ET COMMENT\n' +
+          'Exemples concrets tires des donnees. Mecanismes precis, pas de generalites.\n\n' +
+          '## FAILLES EXPLOITABLES PAR 3DN\n' +
+          'Angles d attaque realistes bases sur leurs points faibles detectes.\n\n' +
+          '## PLAN D ACTION 3DN — 5 ETAPES\n' +
+          '1. Cette semaine (action immediate, realisable en 1-2h)\n' +
+          '2. Ce mois (quick win mesurable)\n' +
+          '3. Dans 3 mois (action structurelle)\n' +
+          '4. Dans 6 mois (differenciation durable)\n' +
+          '5. Innovation rupture (se demarquer totalement)\n' +
+          'Chaque action doit etre SPECIFIQUE, DATEE et ACTIONNABLE des demain matin.';
+
+      } else if (osintMode === 'veille') {
+        missionBlock =
+          '=== TA MISSION — VEILLE STRATEGIQUE ===\n' +
+          'Tu es un analyste de veille senior. Regles absolues :\n' +
+          '- Utilise UNIQUEMENT les donnees collectees. Zero extrapolation non fondee.\n' +
+          '- Distingue clairement les FAITS (dans les donnees) des SIGNAUX FAIBLES (interpretes).\n' +
+          '- Si une tendance n est pas dans les donnees, ne l invente pas.\n\n' +
+          'Structure ta reponse ainsi :\n\n' +
+          '## CE QUI SE PASSE REELLEMENT\n' +
+          'Faits dates et chiffres uniquement. Cite tes sources.\n\n' +
+          '## SIGNAUX FAIBLES & TENDANCES\n' +
+          'Patterns detectes dans les donnees. Ce qui monte, ce qui baisse.\n' +
+          'Distingue signal fort (confirme par plusieurs sources) vs signal faible (1 source).\n\n' +
+          '## IMPACT DIRECT POUR 3DN NUISIBLES\n' +
+          'Traduis chaque signal en impact concret pour Alexandre (Drome/Ardeche, nuisibles).\n' +
+          'Opportunite ou menace ? Urgence : haute / moyenne / faible.\n\n' +
+          '## ACTEURS CLES DETECTES\n' +
+          'Concurrents, partenaires, influenceurs, organismes identifies dans les donnees.\n\n' +
+          '## 3 ACTIONS IMMEDIATES\n' +
+          '- Cette semaine : action concrete a faire sous 48h\n' +
+          '- Ce mois : initiative a lancer\n' +
+          '- Dans 3 mois : positionnement strategique a preparer\n\n' +
+          '## INDICATEURS A SURVEILLER\n' +
+          'Quels signaux monitorer la semaine prochaine pour suivre l evolution ?';
+
+      } else {
+        // Autres modes : prompt générique amélioré
+        missionBlock =
+          '=== TA MISSION ===\n' +
+          '1. Valide chaque hypothèse avec des preuves concrètes dans les données\n' +
+          '2. Extrait les chiffres clés et les faits vérifiables\n' +
+          '3. Identifie les outils, stratégies et mécanismes détectés\n' +
+          '4. Liste 5 actions SPÉCIFIQUES et ACTIONNABLES\n' +
+          'Ne dis JAMAIS "non spécifié" si la donnée existe dans les sources.';
+      }
+
+      const userPrompt = 'SUJET : ' + query + '\n\n' + dataBlock + '\n\n' + missionBlock;
+
+      const gmData = await callLLM(c.groqKey, {
+        system: systemTxt,
+        messages: [{ role: 'user', parts: [{ text: userPrompt || query }] }],
+        maxTokens: opts.deep ? 3000 : 1800,
+        temperature: 0.3
+      });
+      const reply = gmData._groq ? gmData.text : (gmData.candidates?.[0]?.content?.parts?.[0]?.text || 'Aucune réponse');
+      const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+      console.log('REPLY BRUT:', reply);
+      console.log('REPLY FORMATTE:', fmt(reply));
+
+      loader.remove();
+      const nbSources = (typeof tvData !== 'undefined' && tvData?.results ? tvData.results.length : 0) || Math.max(1, (sources || '').split('===').length - 1);
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      const isPdfMode = ['veille', 'scraping'].includes(osintMode);
+      card.innerHTML = `
+        <div class="result-head" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="r-badge" style="background:${mode.color}18;color:${mode.color};border:1px solid ${mode.color}33">${mode.badge}</span>
+          <span class="r-query">${esc(query)}</span>
+          <span class="r-time">${elapsed}s</span>
+          ${isPdfMode ? '<button onclick="generatePDF(this)" style="margin-left:auto;background:var(--bg3);border:1px solid var(--accent);border-radius:6px;color:var(--accent);font-size:11px;padding:4px 12px;cursor:pointer;font-weight:600">📄 PDF</button>' : ''}
+        </div>
+        <div class="result-body">${fmt(reply)}</div>`;
+
+      document.getElementById('osint-results').prepend(card);
+      await saveOsintResult(query, mode.badge, reply);
+
+      // Photos pour OSINT + Recherche + Veille
+      if (['osint', 'recherche', 'veille'].includes(osintMode)) {
+        const photosDiv = document.createElement('div');
+        photosDiv.style.cssText = 'padding:0 18px 16px';
+        photosDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);font-family:\'DM Mono\',monospace">📸 Recherche de photos...</div>';
+        card.appendChild(photosDiv);
+        const allPhotos = await searchAllPhotos(query, osintMode);
+        if (allPhotos.wikimedia.length > 0 || allPhotos.unsplash.length > 0) {
+          renderAllPhotos(allPhotos, photosDiv);
+        } else {
+          photosDiv.innerHTML = '';
+        }
+      }
+
+      // Si mode streaming → ajouter liens fixes + bande-annonce
+      if (osintMode === 'streaming') {
+        // Vérifier si URL YouTube manuelle fournie
+        const manualYtUrl = document.getElementById('yt-manual-url')?.value?.trim();
+        if (manualYtUrl && manualYtUrl.includes('youtube.com')) {
+          const ytId = manualYtUrl.split('v=')[1]?.split('&')[0];
+          if (ytId) {
+            const manualDiv = document.createElement('div');
+            manualDiv.style.cssText = 'padding:0 18px 16px';
+            const fakeVideo = { id: ytId, title: query };
+            manualDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:\'DM Mono\',monospace">🎬 BANDE-ANNONCE</div>' + createYTPlaceholder(fakeVideo);
+            card.appendChild(manualDiv);
+          }
+        } else {
+          // Recherche automatique YouTube
+          const ytDiv = document.createElement('div');
+          ytDiv.style.cssText = 'padding:0 18px 16px';
+          ytDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);font-family:\'DM Mono\',monospace">🎬 Recherche bande-annonce...</div>';
+          card.appendChild(ytDiv);
+          const video = await searchYouTubeTrailer(query);
+          if (video) {
+            ytDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:\'DM Mono\',monospace">🎬 BANDE-ANNONCE</div>' + createYTPlaceholder(video);
+          } else {
+            ytDiv.innerHTML = '';
+          }
+        }
+        // Bloc liens cliquables toujours présent
+        const linksDiv = document.createElement('div');
+        linksDiv.style.cssText = 'padding:0 18px 12px';
+        const q_enc = encodeURIComponent(query);
+        linksDiv.innerHTML = `
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace">🔗 LIENS DIRECTS</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+            <a href="https://www.justwatch.com/fr/recherche?q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;font-size:12px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🎬 JustWatch</a>
+            <a href="https://www.netflix.com/search?q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;font-size:12px;transition:border-color .15s" onmouseover="this.style.borderColor='#e50914'" onmouseout="this.style.borderColor='var(--border)'">🔴 Netflix</a>
+            <a href="https://www.primevideo.com/search/ref=atv_sr_sug_4?phrase=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;font-size:12px;transition:border-color .15s" onmouseover="this.style.borderColor='#00a8e0'" onmouseout="this.style.borderColor='var(--border)'">📦 Prime Video</a>
+            <a href="https://www.disneyplus.com" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;font-size:12px;transition:border-color .15s" onmouseover="this.style.borderColor='#113ccf'" onmouseout="this.style.borderColor='var(--border)'">✨ Disney+</a>
+            <a href="https://www.arte.tv/fr/search/#q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--green);text-decoration:none;font-size:12px;border-color:var(--green-border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--green-border)'">🆓 Arte</a>
+            <a href="https://www.france.tv/recherche/?q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--green);text-decoration:none;font-size:12px;border-color:var(--green-border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--green-border)'">🆓 France.tv</a>
+            <a href="https://pluto.tv/fr/search?q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--green);text-decoration:none;font-size:12px;border-color:var(--green-border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--green-border)'">🆓 Pluto TV</a>
+            <a href="https://www.youtube.com/results?search_query=${q_enc}+film+complet+gratuit" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--green);text-decoration:none;font-size:12px;border-color:var(--green-border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--green-border)'">🆓 YouTube</a>
+          </div>`;
+        card.appendChild(linksDiv);
+
+        // Séparateur
+        const sep = document.createElement('div');
+        sep.style.cssText = 'border-top:1px solid var(--border);margin:0 18px';
+        card.appendChild(sep);
+        const ytDiv = document.createElement('div');
+        ytDiv.style.cssText = 'padding:0 18px 16px';
+        ytDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:\'DM Mono\',monospace">🎬 BANDE-ANNONCE</div><div style="font-size:12px;color:var(--text3)">Recherche en cours...</div>';
+        card.appendChild(ytDiv);
+        const video = await searchYouTubeTrailer(query);
+        if (video) {
+          ytDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:\'DM Mono\',monospace">🎬 BANDE-ANNONCE</div>' + createYTPlaceholder(video);
+        } else {
+          ytDiv.innerHTML = '';
+        }
+      }
+
+    } catch(err) {
+      loader.remove();
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      card.innerHTML = `<div class="result-head"><span class="r-badge" style="background:rgba(240,85,85,.1);color:var(--red)">❌ ERREUR</span><span class="r-query">${esc(query)}</span></div><div class="result-body" style="color:var(--red)">${esc(err.message)}<br><small>Vérifie ta connexion et tes clés API.</small></div>`;
+      document.getElementById('osint-results').prepend(card);
+      // Bouton PDF après insertion dans le DOM
+      if (['veille', 'scraping'].includes(osintMode)) {
+        const head = card.querySelector('.result-head');
+        if (head) {
+          const pdfBtn = document.createElement('button');
+          pdfBtn.textContent = '📄 PDF';
+          pdfBtn.style.cssText = 'margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:11px;padding:4px 12px;cursor:pointer;font-family:Montserrat,sans-serif;transition:all .15s';
+          pdfBtn.onmouseover = () => { pdfBtn.style.borderColor='var(--accent)'; pdfBtn.style.color='var(--accent)'; };
+          pdfBtn.onmouseout = () => { pdfBtn.style.borderColor='var(--border)'; pdfBtn.style.color='var(--text2)'; };
+          pdfBtn.onclick = () => generatePDF(pdfBtn);
+          head.appendChild(pdfBtn);
+        }
+      }
+
+      // Photos pour OSINT + Recherche + Veille
+      if (['osint', 'recherche', 'veille'].includes(osintMode)) {
+        const photosDiv = document.createElement('div');
+        photosDiv.style.cssText = 'padding:0 18px 16px';
+        photosDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);font-family:\'DM Mono\',monospace">📸 Recherche de photos...</div>';
+        card.appendChild(photosDiv);
+        const allPhotos = await searchAllPhotos(query, osintMode);
+        if (allPhotos.wikimedia.length > 0 || allPhotos.unsplash.length > 0) {
+          renderAllPhotos(allPhotos, photosDiv);
+        } else {
+          photosDiv.innerHTML = '';
+        }
+      }
+
+      // Si mode streaming → ajouter liens fixes + bande-annonce
+      if (osintMode === 'streaming') {
+        // Vérifier si URL YouTube manuelle fournie
+        const manualYtUrl = document.getElementById('yt-manual-url')?.value?.trim();
+        if (manualYtUrl && manualYtUrl.includes('youtube.com')) {
+          const ytId = manualYtUrl.split('v=')[1]?.split('&')[0];
+          if (ytId) {
+            const manualDiv = document.createElement('div');
+            manualDiv.style.cssText = 'padding:0 18px 16px';
+            const fakeVideo = { id: ytId, title: query };
+            manualDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:\'DM Mono\',monospace">🎬 BANDE-ANNONCE</div>' + createYTPlaceholder(fakeVideo);
+            card.appendChild(manualDiv);
+          }
+        } else {
+          // Recherche automatique YouTube
+          const ytDiv = document.createElement('div');
+          ytDiv.style.cssText = 'padding:0 18px 16px';
+          ytDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);font-family:\'DM Mono\',monospace">🎬 Recherche bande-annonce...</div>';
+          card.appendChild(ytDiv);
+          const video = await searchYouTubeTrailer(query);
+          if (video) {
+            ytDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:\'DM Mono\',monospace">🎬 BANDE-ANNONCE</div>' + createYTPlaceholder(video);
+          } else {
+            ytDiv.innerHTML = '';
+          }
+        }
+        // Bloc liens cliquables toujours présent
+        const linksDiv = document.createElement('div');
+        linksDiv.style.cssText = 'padding:0 18px 12px';
+        const q_enc = encodeURIComponent(query);
+        linksDiv.innerHTML = `
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace">🔗 LIENS DIRECTS</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+            <a href="https://www.justwatch.com/fr/recherche?q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;font-size:12px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🎬 JustWatch</a>
+            <a href="https://www.netflix.com/search?q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;font-size:12px;transition:border-color .15s" onmouseover="this.style.borderColor='#e50914'" onmouseout="this.style.borderColor='var(--border)'">🔴 Netflix</a>
+            <a href="https://www.primevideo.com/search/ref=atv_sr_sug_4?phrase=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;font-size:12px;transition:border-color .15s" onmouseover="this.style.borderColor='#00a8e0'" onmouseout="this.style.borderColor='var(--border)'">📦 Prime Video</a>
+            <a href="https://www.disneyplus.com" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;font-size:12px;transition:border-color .15s" onmouseover="this.style.borderColor='#113ccf'" onmouseout="this.style.borderColor='var(--border)'">✨ Disney+</a>
+            <a href="https://www.arte.tv/fr/search/#q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--green);text-decoration:none;font-size:12px;border-color:var(--green-border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--green-border)'">🆓 Arte</a>
+            <a href="https://www.france.tv/recherche/?q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--green);text-decoration:none;font-size:12px;border-color:var(--green-border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--green-border)'">🆓 France.tv</a>
+            <a href="https://pluto.tv/fr/search?q=${q_enc}" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--green);text-decoration:none;font-size:12px;border-color:var(--green-border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--green-border)'">🆓 Pluto TV</a>
+            <a href="https://www.youtube.com/results?search_query=${q_enc}+film+complet+gratuit" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--green);text-decoration:none;font-size:12px;border-color:var(--green-border);transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--green-border)'">🆓 YouTube</a>
+          </div>`;
+        card.appendChild(linksDiv);
+
+        // Séparateur
+        const sep = document.createElement('div');
+        sep.style.cssText = 'border-top:1px solid var(--border);margin:0 18px';
+        card.appendChild(sep);
+        const ytDiv = document.createElement('div');
+        ytDiv.style.cssText = 'padding:0 18px 16px';
+        ytDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:\'DM Mono\',monospace">🎬 BANDE-ANNONCE</div><div style="font-size:12px;color:var(--text3)">Recherche en cours...</div>';
+        card.appendChild(ytDiv);
+        const video = await searchYouTubeTrailer(query);
+        if (video) {
+          ytDiv.innerHTML = '<div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-family:\'DM Mono\',monospace">🎬 BANDE-ANNONCE</div>' + createYTPlaceholder(video);
+        } else {
+          ytDiv.innerHTML = '';
+        }
+      }
+    }
+
+    btn.disabled = false; btn.textContent = '⚡ Lancer l\'agent';
+  }
+
+  // ── UTILS ──
+  function fmt(t) {
+    return t
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,'<em>$1</em>')
+      .replace(/`(.+?)`/g,'<code>$1</code>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px">$1 ↗</a>')
+      .replace(/^#### (.+)$/gm,'<div style="font-size:13px;font-weight:600;color:var(--accent);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.05em">$1</div>')
+      .replace(/^### (.+)$/gm,'<div style="font-size:15px;font-weight:600;color:var(--text);margin:14px 0 6px;border-left:3px solid var(--accent);padding-left:10px">$1</div>')
+      .replace(/^## (.+)$/gm,'<div style="font-size:17px;font-weight:700;color:var(--text);margin:16px 0 8px">$1</div>')
+      .replace(/^# (.+)$/gm,'<div style="font-size:19px;font-weight:700;color:var(--text);margin:16px 0 8px">$1</div>')
+      .replace(/^---+$/gm,'<hr style="border:none;border-top:1px solid var(--border2);margin:12px 0">')
+      .replace(/^- (.+)$/gm,'<div style="display:flex;gap:8px;margin:4px 0"><span style="color:var(--accent);flex-shrink:0">▸</span><span>$1</span></div>')
+      .replace(/^\d+\. (.+)$/gm,'<div style="display:flex;gap:8px;margin:4px 0"><span style="color:var(--accent);flex-shrink:0">•</span><span>$1</span></div>')
+      .replace(/\n{2,}/g,'<br><br>')
+      .replace(/\n/g,'<br>');
+  }
+  function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
