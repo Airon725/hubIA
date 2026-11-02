@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b1210">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Agent Proto">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b1210'/><text y='.9em' font-size='78' x='11'>🤖</text></svg>">
+<title>Agent Proto</title>
+<style>
+  :root {
+    --bg: #0b1210; --bg2: #111b17; --bg3: #17241f; --border: #22352d;
+    --text: #e8f1ec; --text2: #93b3a2; --text3: #5d7d6c;
+    --accent: #2eb84b; --accent-soft: rgba(46,184,75,.14);
+    --tool: #4d9eff; --tool-soft: rgba(77,158,255,.12);
+    --warn: #f5c518; --err: #f05555;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column; height: 100dvh; overflow: hidden;
+  }
+  header {
+    display: flex; align-items: center; gap: 10px;
+    padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 16px; font-weight: 650; flex: 1; }
+  .badge { font-size: 11px; padding: 3px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+  .icon-btn { background: none; border: 1px solid var(--border); color: var(--text2); border-radius: 10px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
+
+  main { flex: 1; overflow: hidden; position: relative; }
+  .panel { position: absolute; inset: 0; overflow-y: auto; padding: 16px; display: none; }
+  .panel.active { display: block; }
+  #panel-chat { display: none; flex-direction: column; padding: 0; }
+  #panel-chat.active { display: flex; }
+
+  #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 88%; padding: 10px 13px; border-radius: var(--radius); word-wrap: break-word; overflow-wrap: anywhere; }
+  .msg.user { align-self: flex-end; background: var(--accent); color: #04140a; border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: var(--bg3); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg.bot p + p, .msg.bot ul + p, .msg.bot p + ul { margin-top: 8px; }
+  .msg.bot ul { padding-left: 18px; }
+  .msg.bot a { color: var(--tool); }
+  .msg.bot code { background: rgba(255,255,255,.07); padding: 1px 5px; border-radius: 5px; font-size: 13px; }
+  .msg.err { align-self: flex-start; background: rgba(240,85,85,.1); border: 1px solid rgba(240,85,85,.35); color: #ffb3b3; font-size: 14px; }
+  .meta { align-self: flex-start; font-size: 11px; color: var(--text3); margin-top: -4px; padding-left: 4px; }
+
+  .step { align-self: flex-start; max-width: 88%; font-size: 13px; background: var(--tool-soft); border: 1px solid rgba(77,158,255,.25); color: #b9d7ff; border-radius: 10px; padding: 6px 10px; }
+  .step summary { cursor: pointer; list-style: none; }
+  .step summary::-webkit-details-marker { display: none; }
+  .step pre { margin-top: 6px; white-space: pre-wrap; font-size: 12px; color: var(--text2); max-height: 220px; overflow: auto; }
+  .thinking { align-self: flex-start; color: var(--text3); font-size: 13px; padding-left: 4px; }
+  .thinking::after { content: "…"; animation: dots 1.2s infinite; }
+  @keyframes dots { 0%{opacity:.2} 50%{opacity:1} 100%{opacity:.2} }
+
+  .empty { margin: auto 0; text-align: center; color: var(--text2); padding: 10px 6px; }
+  .empty .big { font-size: 42px; }
+  .empty h2 { font-size: 17px; color: var(--text); margin: 6px 0 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+  .chip { background: var(--bg3); border: 1px solid var(--border); color: var(--text); border-radius: 99px; padding: 7px 12px; font-size: 13px; cursor: pointer; text-align: left; }
+
+  #composer { display: flex; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: var(--bg2); border-top: 1px solid var(--border); align-items: flex-end; }
+  #input { flex: 1; resize: none; max-height: 120px; min-height: 42px; background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; font: inherit; outline: none; }
+  #input:focus { border-color: var(--accent); }
+  .round { width: 42px; height: 42px; border-radius: 12px; border: none; font-size: 18px; cursor: pointer; flex-shrink: 0; }
+  #send { background: var(--accent); color: #04140a; }
+  #send:disabled { opacity: .4; }
+  #mic { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+  #mic.on { background: var(--err); color: white; border-color: var(--err); }
+
+  nav { display: flex; background: var(--bg2); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); }
+  nav button { flex: 1; background: none; border: none; color: var(--text3); padding: 9px 0 8px; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  nav button span { font-size: 19px; }
+  nav button.active { color: var(--accent); }
+
+  h3 { font-size: 15px; margin: 4px 0 10px; }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+  .hint { font-size: 13px; color: var(--text2); margin-bottom: 10px; }
+  label { display: block; font-size: 13px; color: var(--text2); margin: 10px 0 4px; }
+  input[type=text], input[type=password], select {
+    width: 100%; background: var(--bg3); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px; font: inherit; outline: none;
+  }
+  .radio { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; }
+  .radio input { margin-top: 4px; accent-color: var(--accent); }
+  .radio b { display: block; font-size: 14px; }
+  .radio small { color: var(--text2); font-size: 12px; }
+  .btn { background: var(--accent); color: #04140a; border: none; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 600; cursor: pointer; margin-top: 12px; }
+  .btn.ghost { background: none; color: var(--text2); border: 1px solid var(--border); font-weight: 500; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .list-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .list-item:last-child { border-bottom: none; }
+  .list-item .txt { flex: 1; }
+  .list-item.done .txt { text-decoration: line-through; color: var(--text3); }
+  .list-item small { color: var(--text3); display: block; font-size: 12px; }
+  .list-item input[type=checkbox] { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--accent); }
+  .del { background: none; border: none; color: var(--text3); font-size: 16px; cursor: pointer; }
+  .stat { font-size: 26px; font-weight: 700; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🤖 Agent Proto</h1>
+  <span class="badge" id="model-badge">Groq · gratuit</span>
+  <button class="icon-btn" id="new-chat" title="Nouvelle conversation">↺ Nouveau</button>
+</header>
+
+<main>
+  <!-- ── CHAT ── -->
+  <section class="panel active" id="panel-chat">
+    <div id="messages"></div>
+    <div id="composer">
+      <button class="round" id="mic" title="Dicter">🎤</button>
+      <textarea id="input" rows="1" placeholder="Demande-moi quelque chose…"></textarea>
+      <button class="round" id="send" title="Envoyer">➤</button>
+    </div>
+  </section>
+
+  <!-- ── TÂCHES ── -->
+  <section class="panel" id="panel-tasks">
+    <div class="card">
+      <h3>✅ Mes tâches</h3>
+      <p class="hint">L'agent peut en ajouter, les lister et les cocher pour toi. Essaie : « ajoute rappeler le client Martin pour jeudi ».</p>
+      <div id="tasks-list"></div>
+    </div>
+  </section>
+
+  <!-- ── MÉMOIRE ── -->
+  <section class="panel" id="panel-memory">
+    <div class="card">
+      <h3>🧠 Ce que l'agent retient de toi</h3>
+      <p class="hint">Dis « souviens-toi que… » et l'agent le note ici. Il s'en sert dans toutes les conversations.</p>
+      <div id="memory-list"></div>
+    </div>
+  </section>
+
+  <!-- ── RÉGLAGES ── -->
+  <section class="panel" id="panel-settings">
+    <div class="card">
+      <h3>🧩 Cerveau de l'agent</h3>
+      <label class="radio"><input type="radio" name="provider" value="groq">
+        <span><b>Groq · Llama (gratuit)</b><small>Quota gratuit chaque jour. Idéal pour s'entraîner.</small></span></label>
+      <label class="radio"><input type="radio" name="provider" value="haiku">
+        <span><b>Claude Haiku 5.5</b><small>Très peu cher (≈ 0,10 $ / 0,50 $ par million de tokens). Fiable avec les outils.</small></span></label>
+      <label class="radio"><input type="radio" name="provider" value="sonnet">
+        <span><b>Claude Sonnet 5.5</b><small>Plus intelligent, ≈ 20× plus cher que Haiku (2 $ / 10 $).</small></span></label>
+      <label for="groq-model">Modèle Groq</label>
+      <input type="text" id="groq-model" placeholder="llama-3.3-70b-versatile">
+    </div>
+
+    <div class="card">
+      <h3>🔑 Clés API</h3>
+      <p class="hint">Elles restent uniquement dans ce navigateur, sur ton téléphone.</p>
+      <label for="key-groq">Clé Groq (console.groq.com)</label>
+      <input type="password" id="key-groq" placeholder="gsk_…" autocomplete="off">
+      <label for="key-anthropic">Clé Anthropic (console.anthropic.com)</label>
+      <input type="password" id="key-anthropic" placeholder="sk-ant-…" autocomplete="off">
+      <label for="key-tavily">Clé Tavily — recherche web (facultatif)</label>
+      <input type="password" id="key-tavily" placeholder="tvly-…" autocomplete="off">
+      <div class="row">
+        <button class="btn" id="save-settings">Enregistrer</button>
+        <button class="btn ghost" id="import-hub">Importer depuis mon Hub 3DN</button>
+      </div>
+      <p class="hint" id="settings-msg" style="margin-top:10px"></p>
+    </div>
+
+    <div class="card">
+      <h3>💶 Dépenses API ce mois-ci</h3>
+      <div class="stat" id="cost-month">0,00 $</div>
+      <p class="hint" id="cost-detail">Seuls les modèles Claude sont payants. Groq est gratuit dans la limite de son quota.</p>
+      <button class="btn ghost" id="reset-cost">Remettre à zéro</button>
+    </div>
+
+    <div class="card">
+      <h3>🧰 Outils de l'agent</h3>
+      <p class="hint" style="margin:0">🌦️ Météo (Open-Meteo, gratuit) · 🔎 Recherche web (Tavily, ou Wikipédia sans clé) · 📄 Lecture de page web (Tavily) · 🧮 Calculatrice · ✅ Tâches · 🧠 Mémoire</p>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button class="active" data-panel="chat"><span>💬</span>Agent</button>
+  <button data-panel="tasks"><span>✅</span>Tâches</button>
+  <button data-panel="memory"><span>🧠</span>Mémoire</button>
+  <button data-panel="settings"><span>⚙️</span>Réglages</button>
+</nav>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   STOCKAGE LOCAL (tout reste sur le téléphone)
+   ════════════════════════════════════════════════════════════════ */
+const store = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem('agentproto-' + key); return v === null ? fallback : JSON.parse(v); }
+    catch { return fallback; }
+  },
+  set(key, value) {
+    try { localStorage.setItem('agentproto-' + key, JSON.stringify(value)); } catch {}
+  }
+};
+
+let settings = Object.assign({
+  provider: 'groq', groqModel: 'llama-3.3-70b-versatile',
+  groqKey: '', anthropicKey: '', tavilyKey: ''
+}, store.get('settings', {}));
+let tasks = store.get('tasks', []);
+let memory = store.get('memory', []);
+let costs = store.get('costs', { month: '', usd: 0, requests: 0 });
+
+const MODELS = {
+  haiku:  { id: 'claude-haiku-5-5',  label: 'Claude Haiku 5.5',  inUsd: 0.10, outUsd: 0.50, cacheUsd: 0.01 },
+  sonnet: { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5', inUsd: 2.00, outUsd: 10.00, cacheUsd: 0.10 }
+};
+
+/* ════════════════════════════════════════════════════════════════
+   INSTRUCTIONS DE L'AGENT
+   Elles ne changent jamais pendant une conversation : la date, la
+   mémoire et les tâches sont ajoutées au message de l'utilisateur.
+   ════════════════════════════════════════════════════════════════ */
+const SYSTEM_PROMPT = `Tu es l'assistant personnel d'Alexandre, sur son téléphone. Tu parles français, tu tutoies, tu es direct, chaleureux et concis : des réponses courtes et utiles, adaptées à un petit écran.
+
+Tu disposes d'outils. Utilise-les dès qu'ils sont utiles plutôt que de deviner :
+- meteo pour toute question sur le temps qu'il fait ou qu'il fera ;
+- recherche_web pour l'actualité, les prix, les infos récentes ou tout ce que tu ne sais pas avec certitude ;
+- lire_page pour lire le contenu d'un lien précis ;
+- calcul pour tout calcul, même simple ;
+- ajouter_tache, lister_taches, terminer_tache pour gérer sa liste de tâches ;
+- memoriser quand Alexandre te demande de retenir quelque chose, ou quand il partage une préférence durable sur lui-même.
+
+Chaque message d'Alexandre commence par un bloc [Contexte] avec la date, l'heure, ce que tu sais de lui et ses tâches en cours. Sers-t'en sans le recopier.
+Quand tu as utilisé la recherche web, cite brièvement tes sources (nom du site). Ne fabrique jamais d'informations : si tu ne trouves pas, dis-le.`;
+
+/* ════════════════════════════════════════════════════════════════
+   LES OUTILS — ce que l'agent peut faire concrètement
+   ════════════════════════════════════════════════════════════════ */
+const TOOLS = [
+  {
+    name: 'meteo', icon: '🌦️',
+    description: "Donne la météo actuelle et les prévisions des prochains jours pour une ville.",
+    parameters: { type: 'object', properties: {
+      ville: { type: 'string', description: 'Nom de la ville, ex. "Lille"' },
+      jours: { type: 'integer', description: 'Nombre de jours de prévision (1 à 7). Par défaut 3.' }
+    }, required: ['ville'] }
+  },
+  {
+    name: 'recherche_web', icon: '🔎',
+    description: "Cherche des informations récentes sur internet. Renvoie des résultats avec titre, lien et extrait.",
+    parameters: { type: 'object', properties: {
+      requete: { type: 'string', description: 'La recherche à effectuer, en mots-clés précis' }
+    }, required: ['requete'] }
+  },
+  {
+    name: 'lire_page', icon: '📄',
+    description: "Lit le contenu texte d'une page web à partir de son adresse (URL).",
+    parameters: { type: 'object', properties: {
+      url: { type: 'string', description: 'Adresse complète de la page, commençant par https://' }
+    }, required: ['url'] }
+  },
+  {
+    name: 'calcul', icon: '🧮',
+    description: "Calcule une expression mathématique. Opérateurs : + - * / ( ) % et ^ pour les puissances.",
+    parameters: { type: 'object', properties: {
+      expression: { type: 'string', description: 'Expression à calculer, ex. "1240 * 17.5 / 100"' }
+    }, required: ['expression'] }
+  },
+  {
+    name: 'ajouter_tache', icon: '➕',
+    description: "Ajoute une tâche à la liste d'Alexandre.",
+    parameters: { type: 'object', properties: {
+      texte: { type: 'string', description: 'Description de la tâche' },
+      echeance: { type: 'string', description: "Échéance au format AAAA-MM-JJ, si elle est connue" }
+    }, required: ['texte'] }
+  },
+  {
+    name: 'lister_taches', icon: '📋',
+    description: "Liste les tâches d'Alexandre avec leur numéro et leur état.",
+    parameters: { type: 'object', properties: {
+      inclure_terminees: { type: 'boolean', description: 'Inclure aussi les tâches déjà terminées' }
+    } }
+  },
+  {
+    name: 'terminer_tache', icon: '✔️',
+    description: "Marque une tâche comme terminée à partir de son numéro.",
+    parameters: { type: 'object', properties: {
+      numero: { type: 'integer', description: 'Numéro de la tâche (donné par lister_taches ou le contexte)' }
+    }, required: ['numero'] }
+  },
+  {
+    name: 'memoriser', icon: '🧠',
+    description: "Retient durablement une information sur Alexandre (préférence, fait, habitude).",
+    parameters: { type: 'object', properties: {
+      information: { type: 'string', description: "L'information à retenir, en une phrase" }
+    }, required: ['information'] }
+  }
+];
+
+const WEATHER_CODES = {
+  0: 'ciel dégagé', 1: 'plutôt dégagé', 2: 'partiellement nuageux', 3: 'couvert',
+  45: 'brouillard', 48: 'brouillard givrant', 51: 'bruine légère', 53: 'bruine', 55: 'bruine forte',
+  61: 'pluie faible', 63: 'pluie', 65: 'forte pluie', 66: 'pluie verglaçante', 67: 'forte pluie verglaçante',
+  71: 'neige faible', 73: 'neige', 75: 'forte neige', 77: 'grains de neige',
+  80: 'averses', 81: 'averses', 82: 'violentes averses', 85: 'averses de neige', 86: 'fortes averses de neige',
+  95: 'orage', 96: 'orage avec grêle', 99: 'orage violent avec grêle'
+};
+
+const toolHandlers = {
+  async meteo({ ville, jours = 3 }) {
+    jours = Math.min(Math.max(parseInt(jours) || 3, 1), 7);
+    const geo = await fetchJson(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(ville)}&count=1&language=fr&format=json`);
+    const place = geo.results?.[0];
+    if (!place) return `Ville introuvable : "${ville}".`;
+    const w = await fetchJson(`https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}`
+      + `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m`
+      + `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max`
+      + `&timezone=auto&forecast_days=${jours}`);
+    const c = w.current;
+    let out = `${place.name}${place.admin1 ? ', ' + place.admin1 : ''} (${place.country || ''})\n`
+      + `Maintenant : ${c.temperature_2m}°C (ressenti ${c.apparent_temperature}°C), ${WEATHER_CODES[c.weather_code] || 'code ' + c.weather_code}, vent ${c.wind_speed_10m} km/h\n`;
+    w.daily.time.forEach((d, i) => {
+      out += `${d} : ${WEATHER_CODES[w.daily.weather_code[i]] || '?'}, ${w.daily.temperature_2m_min[i]}°C → ${w.daily.temperature_2m_max[i]}°C, pluie ${w.daily.precipitation_probability_max[i] ?? '?'}%\n`;
+    });
+    return out;
+  },
+
+  async recherche_web({ requete }) {
+    if (settings.tavilyKey) {
+      const res = await fetch('https://api.tavily.com/search', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: settings.tavilyKey, query: requete, search_depth: 'basic', max_results: 5, include_answer: true })
+      });
+      if (!res.ok) throw new Error('Tavily a refusé la requête (clé invalide ou quota dépassé)');
+      const d = await res.json();
+      return (d.answer ? `Synthèse : ${d.answer}\n\n` : '')
+        + (d.results || []).map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${(r.content || '').slice(0, 600)}`).join('\n\n');
+    }
+    // Sans clé Tavily : recherche dans Wikipédia (gratuit, mais pas d'actualité)
+    const d = await fetchJson(`https://fr.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(requete)}&srlimit=5&format=json&origin=*`);
+    const hits = d.query?.search || [];
+    if (!hits.length) return 'Aucun résultat. (Recherche limitée à Wikipédia : ajoute une clé Tavily dans les réglages pour chercher sur tout le web.)';
+    return 'Source : Wikipédia uniquement (pas de clé Tavily configurée — pas d\'actualité récente).\n\n'
+      + hits.map((h, i) => `[${i + 1}] ${h.title}\nhttps://fr.wikipedia.org/wiki/${encodeURIComponent(h.title.replace(/ /g, '_'))}\n${h.snippet.replace(/<[^>]+>/g, '')}`).join('\n\n');
+  },
+
+  async lire_page({ url }) {
+    if (!/^https?:\/\//i.test(url)) return 'Adresse invalide : elle doit commencer par https://';
+    if (!settings.tavilyKey) return "Impossible de lire la page : il faut une clé Tavily dans les réglages.";
+    const res = await fetch('https://api.tavily.com/extract', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_key: settings.tavilyKey, urls: [url] })
+    });
+    if (!res.ok) throw new Error('Tavily n\'a pas pu lire la page');
+    const d = await res.json();
+    const text = d.results?.[0]?.raw_content;
+    if (!text) return 'Page vide ou illisible.';
+    return text.length > 12000 ? text.slice(0, 12000) + '\n\n[… page tronquée à 12 000 caractères]' : text;
+  },
+
+  async calcul({ expression }) {
+    const expr = String(expression).replace(/,/g, '.').replace(/\^/g, '**').replace(/×/g, '*').replace(/÷/g, '/');
+    if (!/^[0-9+\-*/().%\s]+$/.test(expr)) return 'Expression refusée : seuls les chiffres et + - * / ( ) % ^ sont autorisés.';
+    const result = Function('"use strict"; return (' + expr + ')')();
+    if (typeof result !== 'number' || !isFinite(result)) return 'Résultat invalide.';
+    return `${expression} = ${Math.round(result * 1e10) / 1e10}`;
+  },
+
+  async ajouter_tache({ texte, echeance }) {
+    const id = tasks.reduce((m, t) => Math.max(m, t.id), 0) + 1;
+    tasks.push({ id, texte, echeance: echeance || '', faite: false, creee: new Date().toISOString() });
+    saveTasks();
+    return `Tâche n°${id} ajoutée : ${texte}${echeance ? ' (pour le ' + echeance + ')' : ''}`;
+  },
+
+  async lister_taches({ inclure_terminees = false }) {
+    const list = tasks.filter(t => inclure_terminees || !t.faite);
+    if (!list.length) return 'Aucune tâche.';
+    return list.map(t => `n°${t.id} ${t.faite ? '[faite]' : '[à faire]'} ${t.texte}${t.echeance ? ' — échéance ' + t.echeance : ''}`).join('\n');
+  },
+
+  async terminer_tache({ numero }) {
+    const t = tasks.find(t => t.id === Number(numero));
+    if (!t) return `Pas de tâche n°${numero}.`;
+    t.faite = true; saveTasks();
+    return `Tâche n°${t.id} terminée : ${t.texte}`;
+  },
+
+  async memoriser({ information }) {
+    memory.push({ texte: information, date: new Date().toISOString().slice(0, 10) });
+    saveMemory();
+    return `C'est noté : ${information}`;
+  }
+};
+
+async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Service indisponible (' + res.status + ')');
+  return res.json();
+}
+
+async function runTool(name, args) {
+  const handler = toolHandlers[name];
+  if (!handler) return { text: `Outil inconnu : ${name}`, error: true };
+  try { return { text: String(await handler(args || {})) }; }
+  catch (e) { return { text: 'Erreur : ' + e.message, error: true }; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   LE CERVEAU — appel au modèle (Groq ou Claude)
+   Chaque fournisseur a son propre format, on garde donc un
+   historique séparé et on le réinitialise si on change de modèle.
+   ════════════════════════════════════════════════════════════════ */
+let history = [];
+let historyProvider = null;
+
+async function callGroq() {
+  if (!settings.groqKey) throw new Error('Ajoute ta clé Groq dans ⚙️ Réglages (gratuite sur console.groq.com).');
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.groqKey },
+    body: JSON.stringify({
+      model: settings.groqModel || 'llama-3.3-70b-versatile',
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history],
+      tools: TOOLS.map(t => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.parameters } })),
+      tool_choice: 'auto',
+      max_tokens: 2048,
+      temperature: 0.3
+    })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error('Groq : ' + (data.error?.message || res.status));
+  const msg = data.choices[0].message;
+  history.push({ role: 'assistant', content: msg.content || '', ...(msg.tool_calls ? { tool_calls: msg.tool_calls } : {}) });
+  const toolCalls = (msg.tool_calls || []).map(tc => {
+    let args = {};
+    try { args = JSON.parse(tc.function.arguments || '{}'); } catch {}
+    return { id: tc.id, name: tc.function.name, args };
+  });
+  return { text: msg.content || '', toolCalls, usage: null };
+}
+
+function addGroqToolResults(results) {
+  for (const r of results) history.push({ role: 'tool', tool_call_id: r.id, content: r.text });
+}
+
+async function callClaude(modelKey) {
+  if (!settings.anthropicKey) throw new Error('Ajoute ta clé Anthropic dans ⚙️ Réglages (console.anthropic.com).');
+  const model = MODELS[modelKey];
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': settings.anthropicKey,
+      'anthropic-version': '2026-10-21',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: model.id,
+      max_tokens: 8000,
+      system: SYSTEM_PROMPT,
+      tools: TOOLS.map(t => ({ name: t.name, description: t.description, input_schema: t.parameters })),
+      messages: history,
+      output_config: { effort: 'low' },        // assistant du quotidien : réponses rapides et économes
+      cache_control: { type: 'ephemeral' }     // relire les instructions depuis le cache coûte ~10× moins cher
+    })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error('Claude : ' + (data.error?.message || res.status));
+
+  // On renvoie la réponse telle quelle dans l'historique (obligatoire pour les modèles Claude récents)
+  history.push({ role: 'assistant', content: data.content });
+
+  if (data.stop_reason === 'refusal') {
+    return { text: "Désolé, je ne peux pas répondre à cette demande.", toolCalls: [], usage: data.usage, model };
+  }
+  const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+  const toolCalls = data.content.filter(b => b.type === 'tool_use').map(b => ({ id: b.id, name: b.name, args: b.input }));
+  const truncated = data.stop_reason === 'max_tokens';
+  return { text: text + (truncated ? '\n\n_(réponse coupée : trop longue)_' : ''), toolCalls: truncated ? [] : toolCalls, usage: data.usage, model };
+}
+
+function addClaudeToolResults(results) {
+  // Tous les résultats d'outils dans UN seul message
+  history.push({ role: 'user', content: results.map(r => ({
+    type: 'tool_result', tool_use_id: r.id, content: r.text, ...(r.error ? { is_error: true } : {})
+  })) });
+}
+
+function buildContext() {
+  const now = new Date();
+  const date = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const time = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const iso = now.toISOString().slice(0, 10);
+  const mem = memory.length ? memory.map(m => '- ' + m.texte).join('\n') : '(rien pour l\'instant)';
+  const open = tasks.filter(t => !t.faite);
+  const tk = open.length ? open.map(t => `- n°${t.id} ${t.texte}${t.echeance ? ' (échéance ' + t.echeance + ')' : ''}`).join('\n') : '(aucune)';
+  return `[Contexte]\nNous sommes le ${date} (${iso}), il est ${time}.\nCe que tu sais d'Alexandre :\n${mem}\nTâches en cours :\n${tk}\n[/Contexte]\n\n`;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   LA BOUCLE DE L'AGENT
+   réfléchir → choisir un outil → regarder le résultat → recommencer
+   ════════════════════════════════════════════════════════════════ */
+const MAX_STEPS = 8;
+let busy = false;
+
+async function runAgent(userText) {
+  const provider = settings.provider;
+  if (historyProvider !== provider) { history = []; historyProvider = provider; }
+
+  const isClaude = provider !== 'groq';
+  const startLen = history.length;
+  history.push({ role: 'user', content: buildContext() + userText });
+
+  const turnUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, usd: 0 };
+  let thinking = addThinking();
+  let toolCount = 0;
+
+  try {
+    for (let step = 0; step < MAX_STEPS; step++) {
+      const r = isClaude ? await callClaude(provider) : await callGroq();
+      if (r.usage) addUsage(turnUsage, r.usage, r.model);
+
+      if (!r.toolCalls.length) {
+        thinking.remove();
+        addBot(r.text || '(pas de réponse)');
+        addMeta(turnUsage, provider, toolCount);
+        return;
+      }
+      // Le modèle a demandé des outils : on les exécute
+      if (r.text) addBot(r.text);
+      const results = [];
+      for (const call of r.toolCalls) {
+        const res = await runTool(call.name, call.args);
+        toolCount++;
+        addStep(call, res);
+        results.push({ id: call.id, ...res });
+      }
+      isClaude ? addClaudeToolResults(results) : addGroqToolResults(results);
+      thinking.remove(); thinking = addThinking();
+    }
+    thinking.remove();
+    addError(`L'agent a atteint la limite de ${MAX_STEPS} étapes. Reformule ou découpe ta demande.`);
+    addMeta(turnUsage, provider, toolCount);
+  } catch (e) {
+    thinking.remove();
+    addError(e.message);
+    // On annule seulement ce tour, pour garder un historique valide
+    history.length = startLen;
+  }
+}
+
+function addUsage(acc, u, model) {
+  acc.input += u.input_tokens || 0;
+  acc.output += u.output_tokens || 0;
+  acc.cacheRead += u.cache_read_input_tokens || 0;
+  acc.cacheWrite += u.cache_creation_input_tokens || 0;
+  const usd = ((u.input_tokens || 0) * model.inUsd
+    + (u.output_tokens || 0) * model.outUsd
+    + (u.cache_read_input_tokens || 0) * model.cacheUsd
+    + (u.cache_creation_input_tokens || 0) * model.inUsd * 1.25) / 1e6;
+  acc.usd += usd;
+  const month = new Date().toISOString().slice(0, 7);
+  if (costs.month !== month) costs = { month, usd: 0, requests: 0 };
+  costs.usd += usd; costs.requests += 1;
+  store.set('costs', costs); renderCosts();
+}
+
+/* ════════════════════════════════════════════════════════════════
+   AFFICHAGE
+   ════════════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const messagesEl = $('messages');
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function renderMarkdown(src) {
+  const inline = s => escapeHtml(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+    .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>')
+    .replace(/\b_([^_]+)_\b/g, '<i>$1</i>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+  let html = '', list = false;
+  for (const raw of src.split('\n')) {
+    const line = raw.trimEnd();
+    const li = line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/);
+    if (li) { if (!list) { html += '<ul>'; list = true; } html += '<li>' + inline(li[1]) + '</li>'; continue; }
+    if (list) { html += '</ul>'; list = false; }
+    if (!line.trim()) continue;
+    const h = line.match(/^#{1,6}\s+(.*)/);
+    html += '<p>' + (h ? '<b>' + inline(h[1]) + '</b>' : inline(line)) + '</p>';
+  }
+  if (list) html += '</ul>';
+  return html;
+}
+
+function scrollDown() { messagesEl.scrollTop = messagesEl.scrollHeight; }
+function clearEmpty() { const e = messagesEl.querySelector('.empty'); if (e) e.remove(); }
+
+function addUser(text) {
+  clearEmpty();
+  const d = document.createElement('div'); d.className = 'msg user'; d.textContent = text;
+  messagesEl.appendChild(d); scrollDown();
+}
+function addBot(text) {
+  const d = document.createElement('div'); d.className = 'msg bot'; d.innerHTML = renderMarkdown(text);
+  messagesEl.appendChild(d); scrollDown();
+}
+function addError(text) {
+  const d = document.createElement('div'); d.className = 'msg err'; d.textContent = '⚠️ ' + text;
+  messagesEl.appendChild(d); scrollDown();
+}
+function addThinking() {
+  const d = document.createElement('div'); d.className = 'thinking'; d.textContent = "L'agent réfléchit";
+  messagesEl.appendChild(d); scrollDown(); return d;
+}
+function addStep(call, res) {
+  const tool = TOOLS.find(t => t.name === call.name);
+  const argText = Object.values(call.args || {}).join(' · ');
+  const d = document.createElement('details'); d.className = 'step';
+  d.innerHTML = `<summary>${tool?.icon || '🔧'} <b>${escapeHtml(call.name)}</b> ${escapeHtml(argText.slice(0, 60))} ${res.error ? '❌' : '✓'}</summary><pre></pre>`;
+  d.querySelector('pre').textContent = res.text.slice(0, 3000);
+  messagesEl.appendChild(d); scrollDown();
+}
+function addMeta(u, provider, tools) {
+  const d = document.createElement('div'); d.className = 'meta';
+  if (provider === 'groq') {
+    d.textContent = `Groq · gratuit${tools ? ' · ' + tools + ' outil' + (tools > 1 ? 's' : '') : ''}`;
+  } else {
+    const tokensIn = u.input + u.cacheRead + u.cacheWrite;
+    d.textContent = `${MODELS[provider].label}${tools ? ' · ' + tools + ' outil' + (tools > 1 ? 's' : '') : ''} · ${tokensIn.toLocaleString('fr-FR')} lus → ${u.output.toLocaleString('fr-FR')} écrits · ≈ ${formatCents(u.usd)}`;
+  }
+  messagesEl.appendChild(d); scrollDown();
+}
+function formatCents(usd) {
+  const c = usd * 100;
+  return (c < 0.01 ? '< 0,01' : c.toLocaleString('fr-FR', { maximumFractionDigits: c < 1 ? 3 : 2 })) + ' centime' + (c >= 2 ? 's' : '');
+}
+
+function showEmpty() {
+  messagesEl.innerHTML = `
+    <div class="empty">
+      <div class="big">🤖</div>
+      <h2>Salut Alexandre !</h2>
+      <p>Je suis ton agent de test. Je peux utiliser des outils : météo, recherche web, calculs, tâches et mémoire.</p>
+      <div class="chips">
+        <button class="chip">🌦️ Quel temps fera-t-il demain à Lille ?</button>
+        <button class="chip">➕ Ajoute « commander des appâts » à mes tâches pour vendredi</button>
+        <button class="chip">🧠 Souviens-toi que je joue surtout sur Switch 2</button>
+        <button class="chip">🔎 Quels gros jeux Switch 2 sortent ce mois-ci ?</button>
+        <button class="chip">🧮 Combien font 17,5 % de 1 240 € ?</button>
+      </div>
+    </div>`;
+  messagesEl.querySelectorAll('.chip').forEach(c => c.onclick = () => send(c.textContent.replace(/^\S+\s/, '')));
+}
+
+function renderTasks() {
+  const el = $('tasks-list');
+  if (!tasks.length) { el.innerHTML = '<p class="hint" style="margin:0">Aucune tâche pour l\'instant.</p>'; return; }
+  const sorted = [...tasks].sort((a, b) => a.faite - b.faite || (a.echeance || '9').localeCompare(b.echeance || '9'));
+  el.innerHTML = '';
+  for (const t of sorted) {
+    const row = document.createElement('div'); row.className = 'list-item' + (t.faite ? ' done' : '');
+    row.innerHTML = `<input type="checkbox" ${t.faite ? 'checked' : ''}><div class="txt">${escapeHtml(t.texte)}<small>n°${t.id}${t.echeance ? ' · pour le ' + escapeHtml(t.echeance) : ''}</small></div><button class="del" title="Supprimer">✕</button>`;
+    row.querySelector('input').onchange = e => { t.faite = e.target.checked; saveTasks(); };
+    row.querySelector('.del').onclick = () => { tasks = tasks.filter(x => x !== t); saveTasks(); };
+    el.appendChild(row);
+  }
+}
+function saveTasks() { store.set('tasks', tasks); renderTasks(); }
+
+function renderMemory() {
+  const el = $('memory-list');
+  if (!memory.length) { el.innerHTML = '<p class="hint" style="margin:0">Rien pour l\'instant.</p>'; return; }
+  el.innerHTML = '';
+  memory.forEach((m, i) => {
+    const row = document.createElement('div'); row.className = 'list-item';
+    row.innerHTML = `<div class="txt">${escapeHtml(m.texte)}<small>${escapeHtml(m.date || '')}</small></div><button class="del" title="Oublier">✕</button>`;
+    row.querySelector('.del').onclick = () => { memory.splice(i, 1); saveMemory(); };
+    el.appendChild(row);
+  });
+}
+function saveMemory() { store.set('memory', memory); renderMemory(); }
+
+function renderCosts() {
+  const month = new Date().toISOString().slice(0, 7);
+  const usd = costs.month === month ? costs.usd : 0;
+  const req = costs.month === month ? costs.requests : 0;
+  $('cost-month').textContent = usd.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + ' $';
+  $('cost-detail').textContent = `${req} appel${req > 1 ? 's' : ''} à Claude ce mois-ci. Groq est gratuit dans la limite de son quota. (Estimation : la facture exacte est sur console.anthropic.com.)`;
+}
+
+function renderBadge() {
+  $('model-badge').textContent = settings.provider === 'groq' ? 'Groq · gratuit'
+    : settings.provider === 'haiku' ? 'Haiku 5.5' : 'Sonnet 5.5';
+}
+
+function loadSettingsForm() {
+  document.querySelectorAll('input[name=provider]').forEach(r => r.checked = r.value === settings.provider);
+  $('groq-model').value = settings.groqModel || '';
+  $('key-groq').value = settings.groqKey || '';
+  $('key-anthropic').value = settings.anthropicKey || '';
+  $('key-tavily').value = settings.tavilyKey || '';
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ÉVÉNEMENTS
+   ════════════════════════════════════════════════════════════════ */
+async function send(text) {
+  text = (text ?? $('input').value).trim();
+  if (!text || busy) return;
+  busy = true; $('send').disabled = true;
+  $('input').value = ''; autoGrow();
+  addUser(text);
+  await runAgent(text);
+  busy = false; $('send').disabled = false;
+}
+
+function autoGrow() { const i = $('input'); i.style.height = 'auto'; i.style.height = Math.min(i.scrollHeight, 120) + 'px'; }
+
+$('send').onclick = () => send();
+$('input').addEventListener('input', autoGrow);
+$('input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && !('ontouchstart' in window)) { e.preventDefault(); send(); }
+});
+$('new-chat').onclick = () => { history = []; showEmpty(); };
+
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('active', x === b));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + b.dataset.panel));
+  if (b.dataset.panel === 'tasks') renderTasks();
+  if (b.dataset.panel === 'memory') renderMemory();
+});
+
+$('save-settings').onclick = () => {
+  settings.provider = document.querySelector('input[name=provider]:checked')?.value || 'groq';
+  settings.groqModel = $('groq-model').value.trim() || 'llama-3.3-70b-versatile';
+  settings.groqKey = $('key-groq').value.trim();
+  settings.anthropicKey = $('key-anthropic').value.trim();
+  settings.tavilyKey = $('key-tavily').value.trim();
+  store.set('settings', settings); renderBadge();
+  $('settings-msg').textContent = '✅ Enregistré.';
+};
+
+$('import-hub').onclick = () => {
+  let hub = null;
+  try { hub = JSON.parse(localStorage.getItem('hub-ia-config') || 'null'); } catch {}
+  if (!hub) { $('settings-msg').textContent = "Aucune config du Hub 3DN trouvée dans ce navigateur (il faut l'ouvrir depuis la même adresse)."; return; }
+  if (hub.groqKey) $('key-groq').value = hub.groqKey;
+  if (hub.tavilyKey) $('key-tavily').value = hub.tavilyKey;
+  $('settings-msg').textContent = '📥 Clés importées. Appuie sur « Enregistrer ».';
+};
+
+$('reset-cost').onclick = () => { costs = { month: new Date().toISOString().slice(0, 7), usd: 0, requests: 0 }; store.set('costs', costs); renderCosts(); };
+
+// Dictée vocale (Chrome sur Android)
+(function setupMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const mic = $('mic');
+  if (!SR) { mic.style.display = 'none'; return; }
+  const rec = new SR(); rec.lang = 'fr-FR'; rec.interimResults = true;
+  let on = false;
+  rec.onresult = e => { $('input').value = Array.from(e.results).map(r => r[0].transcript).join(''); autoGrow(); };
+  rec.onend = () => { on = false; mic.classList.remove('on'); if ($('input').value.trim()) send(); };
+  rec.onerror = () => { on = false; mic.classList.remove('on'); };
+  mic.onclick = () => { if (on) { rec.stop(); return; } on = true; mic.classList.add('on'); rec.start(); };
+})();
+
+// Démarrage
+loadSettingsForm(); renderBadge(); renderCosts(); showEmpty();
+if (!settings.groqKey && !settings.anthropicKey) {
+  setTimeout(() => addBot("👋 Pour commencer, va dans **⚙️ Réglages** et ajoute une clé API. La clé **Groq** est gratuite (console.groq.com). Si tu ouvres cette page depuis la même adresse que ton Hub 3DN, le bouton « Importer » récupère tes clés automatiquement."), 300);
+}
+</script>
+</body>
+</html>
