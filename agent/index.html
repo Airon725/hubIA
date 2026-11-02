@@ -153,7 +153,10 @@
       <label class="radio"><input type="radio" name="provider" value="sonnet">
         <span><b>Claude Sonnet 5.5</b><small>Plus intelligent, ≈ 20× plus cher que Haiku (2 $ / 10 $).</small></span></label>
       <label for="groq-model">Modèle Groq</label>
-      <input type="text" id="groq-model" placeholder="llama-3.3-70b-versatile">
+      <input type="text" id="groq-model" list="groq-models" placeholder="llama-3.3-70b-versatile">
+      <datalist id="groq-models"></datalist>
+      <button class="btn ghost" id="load-models" style="margin-top:8px">Voir les modèles dispo avec ma clé</button>
+      <p class="hint" id="models-msg" style="margin-top:8px"></p>
     </div>
 
     <div class="card">
@@ -419,13 +422,32 @@ async function runTool(name, args) {
 let history = [];
 let historyProvider = null;
 
-async function callGroq() {
-  if (!settings.groqKey) throw new Error('Ajoute ta clé Groq dans ⚙️ Réglages (gratuite sur console.groq.com).');
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+const GROQ_PREFERRED = ['llama-3.3-70b-versatile', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b',
+  'meta-llama/llama-4-scout-17b-16e-instruct', 'qwen/qwen3-32b', 'llama-3.1-8b-instant'];
+const GROQ_NOT_CHAT = /whisper|guard|tts|orpheus|playai|embed|safeguard/i;
+
+async function listGroqModels() {
+  const res = await fetch('https://api.groq.com/openai/v1/models', { headers: { 'Authorization': 'Bearer ' + settings.groqKey } });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error('Groq : ' + (data.error?.message || res.status));
+  return (data.data || []).map(m => m.id).filter(id => !GROQ_NOT_CHAT.test(id));
+}
+
+// Choisit un modèle que la clé peut réellement utiliser
+async function pickGroqModel(avoid) {
+  const available = await listGroqModels();
+  const ok = available.filter(id => id !== avoid);
+  return GROQ_PREFERRED.find(id => ok.includes(id))
+    || ok.find(id => /llama|gpt-oss|qwen/i.test(id))
+    || ok[0] || null;
+}
+
+async function groqRequest(model) {
+  return fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.groqKey },
     body: JSON.stringify({
-      model: settings.groqModel || 'llama-3.3-70b-versatile',
+      model,
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history],
       tools: TOOLS.map(t => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.parameters } })),
       tool_choice: 'auto',
@@ -433,8 +455,28 @@ async function callGroq() {
       temperature: 0.3
     })
   });
-  const data = await res.json().catch(() => ({}));
+}
+
+async function callGroq() {
+  if (!settings.groqKey) throw new Error('Ajoute ta clé Groq dans ⚙️ Réglages (gratuite sur console.groq.com).');
+  let model = settings.groqModel || GROQ_PREFERRED[0];
+  let res = await groqRequest(model);
+  let data = await res.json().catch(() => ({}));
+
+  // Modèle refusé ou retiré : on en cherche un autre, jusqu'à 3 essais
+  for (let attempt = 0; attempt < 3 && !res.ok; attempt++) {
+    const err = data.error || {};
+    if (!(res.status === 404 || err.code === 'model_not_found' || /does not exist|decommission|not supported|no access/i.test(err.message || ''))) break;
+    const next = await pickGroqModel(model);
+    if (!next) throw new Error("Groq : aucun modèle de discussion n'est disponible avec cette clé.");
+    model = next;
+    settings.groqModel = model; store.set('settings', settings); $('groq-model').value = model;
+    addBot(`ℹ️ Le modèle précédent n'est plus disponible : je passe sur **${model}** (retenu pour la suite).`);
+    res = await groqRequest(model);
+    data = await res.json().catch(() => ({}));
+  }
   if (!res.ok) throw new Error('Groq : ' + (data.error?.message || res.status));
+
   const msg = data.choices[0].message;
   history.push({ role: 'assistant', content: msg.content || '', ...(msg.tool_calls ? { tool_calls: msg.tool_calls } : {}) });
   const toolCalls = (msg.tool_calls || []).map(tc => {
@@ -759,6 +801,17 @@ $('import-hub').onclick = () => {
   if (hub.groqKey) $('key-groq').value = hub.groqKey;
   if (hub.tavilyKey) $('key-tavily').value = hub.tavilyKey;
   $('settings-msg').textContent = '📥 Clés importées. Appuie sur « Enregistrer ».';
+};
+
+$('load-models').onclick = async () => {
+  settings.groqKey = $('key-groq').value.trim() || settings.groqKey;
+  if (!settings.groqKey) { $('models-msg').textContent = "Colle d'abord ta clé Groq."; return; }
+  $('models-msg').textContent = 'Chargement…';
+  try {
+    const ids = await listGroqModels();
+    $('groq-models').innerHTML = ids.map(id => `<option value="${escapeHtml(id)}">`).join('');
+    $('models-msg').textContent = `✅ Clé valide. ${ids.length} modèles disponibles : touche le champ ci-dessus pour choisir.`;
+  } catch (e) { $('models-msg').textContent = '❌ ' + e.message; }
 };
 
 $('reset-cost').onclick = () => { costs = { month: new Date().toISOString().slice(0, 7), usd: 0, requests: 0 }; store.set('costs', costs); renderCosts(); };
