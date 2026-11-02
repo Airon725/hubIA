@@ -13,6 +13,16 @@ Premier prototype d'agent IA personnel, pensé pour le téléphone. C'est une se
 | ✅ `ajouter_tache` / `lister_taches` / `terminer_tache` | Liste de tâches | Gratuit |
 | 🧠 `memoriser` | Retient des infos sur toi pour les conversations suivantes | Gratuit |
 
+## 🎮 Onglet « Bons plans »
+
+Une chaîne de deux agents :
+
+1. **L'enquêteur (Haiku 5.5)** cherche des promos, nouveautés et précommandes de jeux Switch 2 sur les boutiques de ta liste (modifiable dans les réglages). Il utilise Tavily pour chercher et lire des pages, puis transmet des offres structurées : prix, ancien prix, boutique, lien, date de la source, niveau de fiabilité.
+2. **Le rédacteur (Sonnet 5.5, ou Haiku au choix)** écrit le récap à partir de ces offres uniquement, sans rien inventer.
+
+Il faut une clé **Anthropic** et une clé **Tavily**. Le coût réel de chaque passage s'affiche sous le résultat.
+Les liens sont filtrés (https uniquement) et les prix sont toujours à vérifier sur la boutique.
+
 ## Le « cerveau » (au choix dans ⚙️ Réglages)
 
 - **Groq · Llama** : gratuit, avec un quota par jour. Parfait pour s'entraîner.
