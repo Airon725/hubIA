@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b1210">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ma collection">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b1210'/><text y='.9em' font-size='78' x='11'>🎮</text></svg>">
+<title>Ma collection Switch 2</title>
+<style>
+  :root {
+    --bg: #0b1210; --bg2: #111b17; --bg3: #17241f; --border: #22352d;
+    --text: #e8f1ec; --text2: #93b3a2; --text3: #5d7d6c;
+    --accent: #2eb84b; --accent-soft: rgba(46,184,75,.14);
+    --link: #4d9eff; --warn: #f5c518; --err: #f05555; --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding-bottom: env(safe-area-inset-bottom); }
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg2); border-bottom: 1px solid var(--border); padding: calc(10px + env(safe-area-inset-top)) 16px 10px; }
+  header h1 { font-size: 17px; }
+  .stats { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  main { padding: 14px 16px 40px; max-width: 720px; margin: 0 auto; }
+  .notice { background: rgba(245,197,24,.1); border: 1px solid rgba(245,197,24,.3); color: #ecd98a; border-radius: var(--radius); padding: 10px 12px; font-size: 13px; margin-bottom: 12px; }
+  input[type=search], input[type=text], input[type=number], select {
+    width: 100%; background: var(--bg3); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px; font: inherit; outline: none; appearance: none;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 12px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex-shrink: 0; background: var(--bg3); color: var(--text2); border: 1px solid var(--border); border-radius: 99px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+  .chip.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .game { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 10px; }
+  .game.owned { border-color: var(--accent); }
+  .top { display: flex; justify-content: space-between; gap: 10px; }
+  .name { font-weight: 650; line-height: 1.3; overflow-wrap: anywhere; }
+  .meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .price { text-align: right; white-space: nowrap; font-weight: 700; color: var(--accent); }
+  .price small { display: block; font-weight: 400; font-size: 11px; color: var(--text3); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); }
+  .tag.ok { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+  .tag.warn { background: rgba(245,197,24,.12); color: var(--warn); border-color: transparent; }
+  .note { font-size: 13px; color: var(--text2); margin-bottom: 6px; overflow-wrap: anywhere; }
+  .sources { font-size: 12px; margin-bottom: 8px; }
+  .sources a { color: var(--link); text-decoration: none; margin-right: 10px; white-space: nowrap; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn { background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .btn.on { background: var(--accent); color: #04140a; border-color: var(--accent); font-weight: 600; }
+  .btn.primary { background: var(--accent); color: #04140a; border-color: var(--accent); font-weight: 600; }
+  .target { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); }
+  .target input { width: 90px; padding: 6px 8px; }
+  .del { margin-left: auto; background: none; border: none; color: var(--text3); cursor: pointer; font-size: 13px; }
+  details.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin: 14px 0; }
+  details.card summary { cursor: pointer; font-weight: 600; }
+  details.card label { display: block; font-size: 13px; color: var(--text2); margin: 10px 0 4px; }
+  .empty { text-align: center; color: var(--text2); padding: 30px 10px; }
+  .hint { font-size: 12px; color: var(--text3); margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎮 Ma collection Switch 2</h1>
+  <div class="stats" id="stats"></div>
+</header>
+
+<main>
+  <div class="notice" id="notice" hidden></div>
+
+  <input type="search" id="q" placeholder="Rechercher un jeu…">
+  <div class="chips" id="chips"></div>
+
+  <div id="list"></div>
+
+  <details class="card">
+    <summary>➕ Ajouter un jeu qui n'est pas dans la liste</summary>
+    <label for="f-titre">Titre</label>
+    <input type="text" id="f-titre" placeholder="ex. Metroid Prime 4: Beyond">
+    <label for="f-edition">Édition</label>
+    <select id="f-edition">
+      <option value="standard">Standard</option>
+      <option value="collector">Collector</option>
+      <option value="autre">Autre (deluxe, steelbook…)</option>
+    </select>
+    <label for="f-support">Support</label>
+    <select id="f-support">
+      <option value="inconnu">Je ne sais pas</option>
+      <option value="cartouche_complete">Cartouche complète</option>
+      <option value="game_key_card">Game-Key Card</option>
+    </select>
+    <div class="actions" style="margin-top:12px"><button class="btn primary" id="f-add">Ajouter</button></div>
+  </details>
+
+  <div class="actions">
+    <button class="btn" id="copy">📋 Copier ma liste</button>
+    <span class="stats" id="copy-msg"></span>
+  </div>
+  <p class="hint">Tes choix restent dans ce navigateur, sur ce téléphone. Les prix sont des relevés à une date donnée : ils servent de repère, pas de garantie.</p>
+</main>
+
+<script>
+const SUPPORT = {
+  cartouche_complete: ['Cartouche complète', 'ok'],
+  game_key_card: ['Game-Key Card', 'warn'],
+  inconnu: ['Support inconnu', '']
+};
+const CONFIANCE = { probable: 'probable', a_verifier: 'à vérifier', inconnu: '' };
+const EDITION = { standard: 'Standard', collector: 'Collector', autre: 'Édition spéciale' };
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+let state = { marks: {}, custom: [] };
+try { state = Object.assign(state, JSON.parse(localStorage.getItem('collection-v1') || '{}')); } catch {}
+const save = () => { try { localStorage.setItem('collection-v1', JSON.stringify(state)); } catch {} };
+
+let catalogue = [];
+let filter = 'tous';
+const FILTERS = [
+  ['tous', 'Tous'], ['owned', '✅ Possédés'], ['wish', '⭐ Souhaits'],
+  ['cartouche_complete', 'Cartouche complète'], ['game_key_card', 'Game-Key Card'], ['collector', 'Collector']
+];
+
+function allGames() { return [...catalogue, ...state.custom]; }
+
+function render() {
+  const games = allGames();
+  const owned = games.filter(g => state.marks[g.id]?.state === 'owned').length;
+  const wish = games.filter(g => state.marks[g.id]?.state === 'wish').length;
+  $('stats').textContent = `${owned} possédé${owned > 1 ? 's' : ''} · ${wish} souhait${wish > 1 ? 's' : ''} · ${games.length} jeux au catalogue`;
+
+  $('chips').innerHTML = FILTERS.map(([k, label]) => `<button class="chip ${filter === k ? 'on' : ''}" data-f="${k}">${label}</button>`).join('');
+  $('chips').querySelectorAll('.chip').forEach(b => b.onclick = () => { filter = b.dataset.f; render(); });
+
+  const q = $('q').value.trim().toLowerCase();
+  const shown = games.filter(g => {
+    const m = state.marks[g.id]?.state;
+    if (q && !(g.titre + ' ' + (g.editeur || '')).toLowerCase().includes(q)) return false;
+    if (filter === 'owned') return m === 'owned';
+    if (filter === 'wish') return m === 'wish';
+    if (filter === 'cartouche_complete' || filter === 'game_key_card') return g.support === filter;
+    if (filter === 'collector') return g.edition === 'collector';
+    return true;
+  });
+
+  $('list').innerHTML = shown.length ? shown.map(card).join('') : '<div class="empty">Aucun jeu ne correspond.</div>';
+
+  $('list').querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+    const id = b.dataset.id, act = b.dataset.act;
+    const cur = state.marks[id]?.state;
+    if (act === 'del') { state.custom = state.custom.filter(g => g.id !== id); delete state.marks[id]; }
+    else if (cur === act) delete state.marks[id];
+    else state.marks[id] = { ...(state.marks[id] || {}), state: act };
+    save(); render();
+  });
+  $('list').querySelectorAll('input[data-target]').forEach(i => i.onchange = () => {
+    const id = i.dataset.target, v = parseFloat(String(i.value).replace(',', '.'));
+    if (state.marks[id]) { state.marks[id].target = isFinite(v) && v > 0 ? v : null; save(); }
+  });
+}
+
+function card(g) {
+  const m = state.marks[g.id] || {};
+  const [supLabel, supCls] = SUPPORT[g.support] || SUPPORT.inconnu;
+  const conf = CONFIANCE[g.confiance] || '';
+  const price = g.prix_eur ? `<div class="price">${g.prix_eur.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €<small>relevé</small></div>` : '';
+  const sources = (g.sources || []).filter(s => /^https:\/\//.test(s.url))
+    .map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)} ↗</a>`).join(' ');
+  return `<div class="game ${m.state === 'owned' ? 'owned' : ''}">
+    <div class="top">
+      <div><div class="name">${esc(g.titre)}</div><div class="meta">${esc(g.editeur || 'Éditeur à compléter')}</div></div>
+      ${price}
+    </div>
+    <div class="tags">
+      <span class="tag">${EDITION[g.edition] || 'Standard'}</span>
+      <span class="tag ${supCls}">${supLabel}${conf ? ' · ' + conf : ''}</span>
+      ${g.custom ? '<span class="tag">ajouté par toi</span>' : ''}
+    </div>
+    ${g.prix_note ? `<div class="note">${esc(g.prix_note)}</div>` : ''}
+    ${g.note ? `<div class="note">${esc(g.note)}</div>` : ''}
+    ${sources ? `<div class="sources">${sources}</div>` : ''}
+    <div class="actions">
+      <button class="btn ${m.state === 'owned' ? 'on' : ''}" data-act="owned" data-id="${esc(g.id)}">${m.state === 'owned' ? '✅ Je l\'ai' : 'Je l\'ai'}</button>
+      <button class="btn ${m.state === 'wish' ? 'on' : ''}" data-act="wish" data-id="${esc(g.id)}">${m.state === 'wish' ? '⭐ Je le veux' : 'Je le veux'}</button>
+      ${m.state === 'wish' ? `<label class="target">Prix cible <input type="text" inputmode="decimal" data-target="${esc(g.id)}" value="${m.target ?? ''}" placeholder="€"></label>` : ''}
+      ${g.custom ? `<button class="del" data-act="del" data-id="${esc(g.id)}">Supprimer</button>` : ''}
+    </div>
+  </div>`;
+}
+
+$('q').addEventListener('input', render);
+
+$('f-add').onclick = () => {
+  const titre = $('f-titre').value.trim();
+  if (!titre) return;
+  state.custom.push({
+    id: 'perso-' + Date.now(), titre, editeur: '', type: 'natif',
+    edition: $('f-edition').value, support: $('f-support').value, confiance: 'inconnu',
+    prix_eur: null, prix_note: '', note: '', sources: [], custom: true
+  });
+  $('f-titre').value = ''; save(); render();
+};
+
+$('copy').onclick = async () => {
+  const lines = [];
+  for (const [label, key] of [['Je les ai', 'owned'], ['Je les veux', 'wish']]) {
+    const items = allGames().filter(g => state.marks[g.id]?.state === key);
+    if (!items.length) continue;
+    lines.push(label + ' :');
+    items.forEach(g => lines.push(`- ${g.titre}${g.edition !== 'standard' ? ' (' + EDITION[g.edition] + ')' : ''}${key === 'wish' && state.marks[g.id].target ? ' — prix cible ' + state.marks[g.id].target + ' €' : ''}`));
+    lines.push('');
+  }
+  try { await navigator.clipboard.writeText(lines.join('\n') || 'Liste vide'); $('copy-msg').textContent = '✅ Copié'; }
+  catch { $('copy-msg').textContent = 'Copie impossible'; }
+};
+
+fetch('catalogue.json', { cache: 'no-cache' })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => {
+    catalogue = d.jeux || [];
+    if (d.avertissement) { $('notice').hidden = false; $('notice').textContent = '⚠️ ' + d.avertissement + (d.maj ? ' (catalogue du ' + d.maj + ')' : ''); }
+    render();
+  })
+  .catch(() => { $('list').innerHTML = '<div class="empty">Impossible de charger le catalogue.</div>'; render(); });
+</script>
+</body>
+</html>

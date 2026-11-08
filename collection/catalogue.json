@@ -1,0 +1,304 @@
+{
+  "version": 1,
+  "maj": "2026-11-08",
+  "avertissement": "Brouillon : seules les infos trouvées dans une source sont renseignées. Le type de support (cartouche complète ou Game-Key Card) est souvent incertain : vérifie-le sur l'emballage ou la fiche de la boutique avant d'acheter.",
+  "jeux": [
+    {
+      "id": "mario-kart-world",
+      "titre": "Mario Kart World",
+      "editeur": "Nintendo",
+      "type": "natif",
+      "edition": "standard",
+      "support": "cartouche_complete",
+      "confiance": "probable",
+      "prix_eur": 89.99,
+      "prix_note": "Prix en boîte relevé au lancement (79,99 € en numérique). À vérifier.",
+      "date_sortie": "",
+      "note": "Nintendo évitait les Game-Key Card pour ses propres jeux (Kotaku, 2025). 23,4 Go.",
+      "sources": [
+        {
+          "label": "Prix boîte vs numérique",
+          "url": "https://www.mac4ever.com/gaming/195357-nintendo-change-la-politique-de-prix-des-jeux-switch-2-sauf-que"
+        },
+        {
+          "label": "Taille du jeu",
+          "url": "https://www.actugaming.net/?p=719555"
+        },
+        {
+          "label": "Game-Key Card : liste Kotaku",
+          "url": "https://kotaku.com/switch-2-key-card-game-cart-physical-list-confirmed-1851777742"
+        }
+      ]
+    },
+    {
+      "id": "donkey-kong-bananza",
+      "titre": "Donkey Kong Bananza",
+      "editeur": "Nintendo",
+      "type": "natif",
+      "edition": "standard",
+      "support": "cartouche_complete",
+      "confiance": "probable",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Même remarque que Mario Kart World pour les jeux Nintendo. 10 Go.",
+      "sources": [
+        {
+          "label": "Taille du jeu",
+          "url": "https://www.actugaming.net/?p=719555"
+        },
+        {
+          "label": "Game-Key Card : liste Kotaku",
+          "url": "https://kotaku.com/switch-2-key-card-game-cart-physical-list-confirmed-1851777742"
+        }
+      ]
+    },
+    {
+      "id": "yoshi",
+      "titre": "Yoshi (titre exact à confirmer)",
+      "editeur": "Nintendo",
+      "type": "natif",
+      "edition": "standard",
+      "support": "cartouche_complete",
+      "confiance": "probable",
+      "prix_eur": 51.99,
+      "prix_note": "Prix physique relevé chez E.Leclerc et Carrefour, moins cher que l'eShop. Date du relevé inconnue.",
+      "date_sortie": "",
+      "note": "Exemple d'un jeu moins cher en boîte qu'en numérique.",
+      "sources": [
+        {
+          "label": "Prix physique vs numérique",
+          "url": "https://www.mac4ever.com/gaming/195357-nintendo-change-la-politique-de-prix-des-jeux-switch-2-sauf-que"
+        }
+      ]
+    },
+    {
+      "id": "fire-emblem-fortunes-weave-collector",
+      "titre": "Fire Emblem: Fortune's Weave",
+      "editeur": "Nintendo",
+      "type": "natif",
+      "edition": "collector",
+      "support": "inconnu",
+      "confiance": "inconnu",
+      "prix_eur": 109.99,
+      "prix_note": "Prix affiché chez Fnac sur Chocobonplan. Date du relevé inconnue.",
+      "date_sortie": "",
+      "note": "Édition collector.",
+      "sources": [
+        {
+          "label": "Rubrique éditions collector (Chocobonplan)",
+          "url": "https://chocobonplan.com/index.php/bons-plans/c/nintendo-editions-collectors/page/1?orderby=date"
+        }
+      ]
+    },
+    {
+      "id": "assassins-creed-shadows",
+      "titre": "Assassin's Creed Shadows",
+      "editeur": "Ubisoft",
+      "type": "natif",
+      "edition": "standard",
+      "support": "inconnu",
+      "confiance": "inconnu",
+      "prix_eur": 28.99,
+      "prix_note": "28,99 € + 3,99 € de livraison chez JoyBuy (vendeur d'import) sur Dealabs. L'offre est peut-être terminée.",
+      "date_sortie": "",
+      "note": "Version française. Support à vérifier : les jeux tiers peuvent être en Game-Key Card.",
+      "sources": [
+        {
+          "label": "Offre Dealabs",
+          "url": "https://www.dealabs.com/bons-plans/assassins-creed-shadows-nintendo-switch-2-version-francaise-3375672"
+        }
+      ]
+    },
+    {
+      "id": "pokemon-pokopia",
+      "titre": "Pokémon Pokopia",
+      "editeur": "",
+      "type": "natif",
+      "edition": "standard",
+      "support": "game_key_card",
+      "confiance": "a_verifier",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Une discussion Dealabs signale que la version du pack console est une Game-Key Card. Contradiction possible avec la règle habituelle de Nintendo : à vérifier avant d'acheter.",
+      "sources": [
+        {
+          "label": "Discussion Dealabs (pack console)",
+          "url": "https://www.dealabs.com/bons-plans/pack-console-nintendo-switch-2-pokemon-pokopia-40eur-compte-adherent-3358920"
+        }
+      ]
+    },
+    {
+      "id": "rise-of-the-tomb-raider-standard",
+      "titre": "Rise of the Tomb Raider: 20 Year Celebration",
+      "editeur": "Limited Run Games",
+      "type": "natif",
+      "edition": "standard",
+      "support": "inconnu",
+      "confiance": "inconnu",
+      "prix_eur": null,
+      "prix_note": "49,99 $ (prix en dollars). Prix européen, livraison et taxes d'import à vérifier.",
+      "date_sortie": "",
+      "note": "Précommandes jusqu'au 15 novembre 2026 (23 h 59, heure de la côte Est). Édition physique de Limited Run Games.",
+      "sources": [
+        {
+          "label": "Playnews",
+          "url": "https://www.playnews.gg/bons-plans/rise-of-the-tomb-raider-sur-switch-2-editions-physiques-a-partir-de-49-99-precommandes-jusqu-au-15-novembre"
+        }
+      ]
+    },
+    {
+      "id": "rise-of-the-tomb-raider-collector",
+      "titre": "Rise of the Tomb Raider: 20 Year Celebration",
+      "editeur": "Limited Run Games",
+      "type": "natif",
+      "edition": "collector",
+      "support": "inconnu",
+      "confiance": "inconnu",
+      "prix_eur": null,
+      "prix_note": "99,99 $ (prix en dollars). Prix européen, livraison et taxes d'import à vérifier.",
+      "date_sortie": "",
+      "note": "Contenu annoncé : steelbook, patch et réplique lumineuse. Précommandes jusqu'au 15 novembre 2026.",
+      "sources": [
+        {
+          "label": "Playnews",
+          "url": "https://www.playnews.gg/bons-plans/rise-of-the-tomb-raider-sur-switch-2-editions-physiques-a-partir-de-49-99-precommandes-jusqu-au-15-novembre"
+        }
+      ]
+    },
+    {
+      "id": "raidou-remastered",
+      "titre": "Raidou Remastered",
+      "editeur": "",
+      "type": "natif",
+      "edition": "standard",
+      "support": "game_key_card",
+      "confiance": "a_verifier",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Cité comme Game-Key Card par Kotaku en 2025. À vérifier pour la version française.",
+      "sources": [
+        {
+          "label": "Kotaku",
+          "url": "https://kotaku.com/switch-2-key-card-game-cart-physical-list-confirmed-1851777742"
+        }
+      ]
+    },
+    {
+      "id": "yakuza-0-directors-cut",
+      "titre": "Yakuza 0 Director's Cut",
+      "editeur": "",
+      "type": "natif",
+      "edition": "standard",
+      "support": "game_key_card",
+      "confiance": "a_verifier",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Cité comme Game-Key Card par Kotaku en 2025. À vérifier pour la version française.",
+      "sources": [
+        {
+          "label": "Kotaku",
+          "url": "https://kotaku.com/switch-2-key-card-game-cart-physical-list-confirmed-1851777742"
+        }
+      ]
+    },
+    {
+      "id": "puyo-puyo-tetris-2s",
+      "titre": "Puyo Puyo Tetris 2S",
+      "editeur": "",
+      "type": "natif",
+      "edition": "standard",
+      "support": "game_key_card",
+      "confiance": "a_verifier",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Cité comme Game-Key Card par Kotaku en 2025. À vérifier pour la version française.",
+      "sources": [
+        {
+          "label": "Kotaku",
+          "url": "https://kotaku.com/switch-2-key-card-game-cart-physical-list-confirmed-1851777742"
+        }
+      ]
+    },
+    {
+      "id": "sonic-x-shadow-generations",
+      "titre": "Sonic X Shadow Generations",
+      "editeur": "Sega",
+      "type": "natif",
+      "edition": "standard",
+      "support": "game_key_card",
+      "confiance": "a_verifier",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Cité comme Game-Key Card par Kotaku en 2025. À vérifier pour la version française.",
+      "sources": [
+        {
+          "label": "Kotaku",
+          "url": "https://kotaku.com/switch-2-key-card-game-cart-physical-list-confirmed-1851777742"
+        }
+      ]
+    },
+    {
+      "id": "bravely-default-flying-fairy-hd",
+      "titre": "Bravely Default Flying Fairy HD Remaster",
+      "editeur": "",
+      "type": "natif",
+      "edition": "standard",
+      "support": "game_key_card",
+      "confiance": "a_verifier",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Cité comme Game-Key Card par Kotaku en 2025. À vérifier pour la version française.",
+      "sources": [
+        {
+          "label": "Kotaku",
+          "url": "https://kotaku.com/switch-2-key-card-game-cart-physical-list-confirmed-1851777742"
+        }
+      ]
+    },
+    {
+      "id": "street-fighter-6-year-1-2",
+      "titre": "Street Fighter 6 Year 1-2 Fighters Edition",
+      "editeur": "Capcom",
+      "type": "natif",
+      "edition": "autre",
+      "support": "game_key_card",
+      "confiance": "a_verifier",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Cité comme Game-Key Card par Kotaku en 2025. À vérifier pour la version française.",
+      "sources": [
+        {
+          "label": "Kotaku",
+          "url": "https://kotaku.com/switch-2-key-card-game-cart-physical-list-confirmed-1851777742"
+        }
+      ]
+    },
+    {
+      "id": "elden-ring-tarnished-edition",
+      "titre": "Elden Ring: Tarnished Edition",
+      "editeur": "Bandai Namco",
+      "type": "natif",
+      "edition": "autre",
+      "support": "game_key_card",
+      "confiance": "a_verifier",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Cité dans un fil de forum Nintendo Life, source peu fiable : à vérifier.",
+      "sources": [
+        {
+          "label": "Forum Nintendo Life",
+          "url": "https://nintendolife.com/forums/nintendo-switch-2/game-key_card_code-in-a-box_list"
+        }
+      ]
+    }
+  ]
+}
