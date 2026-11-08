@@ -73,6 +73,20 @@
       ]
     },
     {
+      "id": "fire-emblem-fortunes-weave",
+      "titre": "Fire Emblem: Fortune's Weave",
+      "editeur": "Nintendo",
+      "type": "natif",
+      "edition": "standard",
+      "support": "inconnu",
+      "confiance": "inconnu",
+      "prix_eur": null,
+      "prix_note": "",
+      "date_sortie": "",
+      "note": "Édition standard. Prix à relever dans les enseignes (voir l'onglet Promos).",
+      "sources": []
+    },
+    {
       "id": "fire-emblem-fortunes-weave-collector",
       "titre": "Fire Emblem: Fortune's Weave",
       "editeur": "Nintendo",
@@ -83,7 +97,7 @@
       "prix_eur": 109.99,
       "prix_note": "Prix affiché chez Fnac sur Chocobonplan. Date du relevé inconnue.",
       "date_sortie": "",
-      "note": "Édition collector.",
+      "note": "Édition collector. L'édition standard est un autre produit, beaucoup moins chère.",
       "sources": [
         {
           "label": "Rubrique éditions collector (Chocobonplan)",
