@@ -9,6 +9,8 @@ Application mobile (PWA) pour suivre une collection de jeux physiques Switch 2 e
 
 Les prix viennent de Serper (Google Shopping, version France), avec une clé personnelle stockée uniquement dans le navigateur. Les résultats sont filtrés : Switch 2 uniquement, bonne édition, enseignes choisies, prix plausible.
 
+Les **images des jeux** sont les photos produit des enseignes, récupérées avec les prix et affichées depuis leur adresse d'origine (jamais copiées). Sans image, une jaquette colorée est générée.
+
 Installation : menu du navigateur, puis « Ajouter à l'écran d'accueil » ou « Installer l'application ».
 
 Les prix sont indicatifs : toujours vérifier sur le site de l'enseigne avant d'acheter.

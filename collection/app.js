@@ -44,7 +44,11 @@ function initials(t) {
   const w = cleanTitle(t).replace(/[^\p{L}\p{N} ]/gu, ' ').split(/\s+/).filter(x => x && !STOP.has(x.toLowerCase()));
   return ((w[0]?.[0] || '?') + (w[1]?.[0] || '')).toUpperCase();
 }
-const cover = (g, cls = '') => `<div class="cover ${cls}" style="--h:${hue(g.titre)}"><b>${esc(initials(g.titre))}</b><i>SWITCH 2</i></div>`;
+const cover = (g, cls = '') => {
+  const img = P.prices?.[g.id]?.img;
+  const pic = /^https:\/\//.test(img || '') ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('has-img');this.remove()">` : '';
+  return `<div class="cover ${cls} ${pic ? 'has-img' : ''}" style="--h:${hue(g.titre)}">${pic}<b>${esc(initials(g.titre))}</b><i>SWITCH 2</i></div>`;
+};
 const SUPPORT = { cartouche_complete: ['Cartouche complète', 'ok'], game_key_card: ['Game-Key Card', 'warn'], inconnu: ['Support inconnu', ''] };
 const EDITION = { standard: 'Standard', collector: 'Collector', autre: 'Édition spéciale' };
 const CONF = { probable: 'probable', a_verifier: 'à vérifier', inconnu: '' };
@@ -109,7 +113,8 @@ function matchOffer(item, g) {
   if (!entry) return null;
   const price = parsePrice(item.price);
   if (!price) return null;
-  return { store: item.source || entry, key: collapse(entry), price, url: /^https:\/\//.test(item.link || '') ? item.link : '', title: item.title };
+  const img = [item.imageUrl, item.thumbnail, item.image].find(u => /^https:\/\//.test(u || '')) || '';
+  return { store: item.source || entry, key: collapse(entry), price, url: /^https:\/\//.test(item.link || '') ? item.link : '', title: item.title, img };
 }
 
 async function fetchOffers(g) {
@@ -143,7 +148,9 @@ async function refreshPrices(ids) {
     const g = byId(ids[i]); if (!g) continue;
     try {
       const offers = await fetchOffers(g);
-      P.prices[g.id] = { at: Date.now(), offers };
+      const img = offers.map(o => o.img).find(Boolean) || P.prices[g.id]?.img || '';
+      offers.forEach(o => delete o.img);
+      P.prices[g.id] = { at: Date.now(), offers, img };
       if (offers.length) {
         found++;
         const h = (P.hist[g.id] = P.hist[g.id] || []);
